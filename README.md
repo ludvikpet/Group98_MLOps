@@ -1,7 +1,7 @@
 # Group98_MLOps
 
 Adam Ledou s_____
-Ludvik Petersen s_____
+Ludvik Petersen s194613
 Martin Maximilian Ægidius s194119
 Troels Ludwig s_____
 
@@ -11,7 +11,7 @@ The main goal of the project is to classify the intent of sent customer queries,
 # Frameworks 
 We intend to use the [HuggingFace Transformers](https://github.com/huggingface/transformers) framework. 
 We will use a base-model version as a baseline, and see if we can improve performance in a transfer-learning context.
-We plan to use hydra for configurations, and wandb for monitoring experiments. We decided against liveshare2 in order to gain more familiarity with git.  
+We plan to use hydra for configurations, and wandb for monitoring experiments. We decided against using the tool Microsoft Live Share in order to gain more familiarity with git.
 
 # Dataset 
 We will use the [banking77](https://huggingface.co/datasets/PolyAI/banking77) dataset consisting of 13083 english-languaged customer service queries with 77 intent labels. 
