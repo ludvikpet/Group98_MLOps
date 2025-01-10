@@ -74,7 +74,7 @@ class MyDataset(Dataset):
         return_tensors='pt',      # Return PyTorch tensors
         add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
         )
-        return encoding["input_ids"]
+        return encoding
 
 
 def text_dataset():
@@ -84,9 +84,8 @@ def text_dataset():
     train_labels = torch.load(proc_path + "train_labels.pt")
     test_text = torch.load(proc_path + "test_text.pt")
     test_labels = torch.load(proc_path + "test_labels.pt")
-
-    train = TensorDataset(train_text, train_labels)
-    test = TensorDataset(test_text, test_labels)
+    train = TensorDataset(train_text["input_ids"][:1000], train_text["token_type_ids"][:1000], train_text["attention_mask"][:1000],train_labels[:1000])
+    test = TensorDataset(test_text["input_ids"][:1000], test_text["token_type_ids"][:1000], test_text["attention_mask"][:1000], test_labels[:1000])
 
     return train, test
 
@@ -99,7 +98,8 @@ def preprocess(raw_data_path: Path, output_folder: Path, dataset_name: str, mode
 
 
 if __name__ == "__main__":
-    typer.run(preprocess)
+    #typer.run(preprocess)
+    _, _ = text_dataset()
     #dataset = load_dataset("PolyAI/banking77",trust_remote_code=True)
     #raw_data_path = Path("data/raw")
     #output_folder = Path("data/processed")

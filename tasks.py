@@ -33,7 +33,7 @@ def dev_requirements(ctx: Context) -> None:
 @task
 def preprocess_data(ctx: Context) -> None:
     """Preprocess data."""
-    ctx.run(f"python src/{PROJECT_NAME}/data.py data/raw data/processed", echo=True, pty=not WINDOWS)
+    ctx.run(f"python src/{PROJECT_NAME}/data.py data/raw data/processed PolyAI/banking77 huawei-noah/TinyBERT_General_4L_312D", echo=True, pty=not WINDOWS)
 
 @task
 def train(ctx: Context) -> None:

@@ -1,0 +1,9 @@
+# @package _group_
+
+hyperparameters:
+  lr: 1e-4
+  batch_size: 2
+  epochs: 40
+  seed: 42
+  
+ 

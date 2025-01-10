@@ -1,0 +1,26 @@
+program: src/mlops_individual/train.py
+name: final_sweep
+project: corrupt_mnist  # change this
+entity: martinaegidius  # change this
+method: bayes
+metric:
+    goal: minimize
+    name: train_loss
+parameters:
+            _group_.hyperparameters.lr:
+                min: 0.0001
+                max: 0.01
+                distribution: uniform
+            _group_.hyperparameters.batch_size:
+                values: [32, 64]
+            _group_.hyperparameters.epochs:
+                values: [10, 15]
+            _group_.hyperparameters.seed:
+                values: [42]
+run_cap: 10
+
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - ${args_no_hyphens}
