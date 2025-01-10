@@ -1,24 +1,33 @@
 # Group98_MLOps
 
-Adam Ledou s204216  <br>
-Ludvik Petersen s194613  <br>
-Martin Maximilian Ægidius s194119  <br>
-Troels Ludwig s204227  <br>
+*Adam Ledou, s204216*  <br>
+*Ludvik Petersen, s194613*  <br>
+*Martin Maximilian Ægidius, s194119*  <br>
+*Troels Ludwig, s204227*  <br>
 
-Overall goal:
-The main goal of the project is to classify the intent of sent customer queries, which potentially could improve efficiency for managing e-mail inboxes. The main goal of the project is to develop MLOps skill-sets.
+**Overall goal**:
+The main goal of the project is to develop our MLOps skill-sets. Our intention is to implement the whole MLOps pipeline, with special emphasis on the operations part of the pipeline.
+
+As a basis for our project, we've chosen to consider banking text data, with the purpose of classifying the intent of sent customer queries, which potentially could improve efficiency for managing e-mail inboxes.
 
 # Frameworks
 We intend to use the [HuggingFace Transformers](https://github.com/huggingface/transformers) framework.
 We will use a base-model version as a baseline, and see if we can improve performance in a transfer-learning context.
-We plan to use hydra for configurations, and wandb for monitoring experiments. We decided against using the tool Microsoft Live Share in order to gain more familiarity with git.
-
+We plan to use *hydra* for configurations, and *wandb* for monitoring experiments. We decided against using the tool Microsoft Live Share in order to gain more familiarity with *git*. Furthermore, we plan to use *invoke* to allow for streamlined command line commands, allowing for e.g. simplifying *git* command configurations by concatenating several commands into one *invoke* task. We beware hubris, and we'll therefore only implement such tasks for *git* once we're familiar with these commands.
 
 # Dataset
-We will use the [banking77](https://huggingface.co/datasets/PolyAI/banking77) dataset consisting of 13083 english-languaged customer service queries with 77 intent labels.
+We will use the [banking77](https://huggingface.co/datasets/PolyAI/banking77) dataset consisting of 13083 english-languaged customer service queries with 77 intent labels. Query examples include:
+
+<p style="text-align: center;"> 
+
+**Query:** *What can I do if my card still hasn't arrived after 2 weeks?*
+
+**Label:** *card_arrival*
+
+</p>
 
 # Model
-We plan to use TinyBERT, which is a distilled version of BERT with approximately 15M parameters. We plan to use the CLS-token for the classification head (if they actually made it with a CLS-token). Alternatively, we will simply build the head on top of the encoded input.
+We plan to use *TinyBERT*, which is a distilled version of BERT with approximately 15M parameters. We plan to use the CLS-token for the classification head (if they actually made it with a CLS-token). Alternatively, we will simply build the head on top of the encoded input.
 
 
 
