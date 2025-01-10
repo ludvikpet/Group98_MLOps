@@ -3,7 +3,7 @@
 Adam Ledou s_____  <br>
 Ludvik Petersen s_____  <br>
 Martin Maximilian Ægidius s194119  <br>
-Troels Ludwig s_____  <br>
+Troels Ludwig s204227  <br>
 
 Overall goal: 
 The main goal of the project is to classify the intent of sent customer queries, which potentially could improve efficiency for managing e-mail inboxes. The main goal of the project is to develop MLOps skill-sets. 
