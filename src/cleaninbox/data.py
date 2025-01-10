@@ -2,12 +2,14 @@ from pathlib import Path
 import json
 
 from datasets import load_dataset 
-#import typer
-from torch.utils.data import Dataset
+import typer
+from torch.utils.data import Dataset, TensorDataset
 import datasets
 from loguru import logger
 from transformers import BertTokenizer
 import torch 
+from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
+
 
 class MyDataset(Dataset):
     """My custom dataset."""
@@ -68,12 +70,25 @@ class MyDataset(Dataset):
     def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
         encoding = tokenizer(text,# List of input texts
         padding=True,              # Pad to the maximum sequence length
-        truncation=True,           # Truncate to the maximum sequence length if necessary
+        truncation=False,           # Truncate to the maximum sequence length if necessary
         return_tensors='pt',      # Return PyTorch tensors
-        add_special_tokens=True    # Add special tokens CLS and SEP
+        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
         )
         return encoding["input_ids"]
 
+
+def text_dataset():
+    proc_path = "data/processed/"
+    proc_path = to_absolute_path(proc_path)+"/"
+    train_text = torch.load(proc_path + "train_text.pt")
+    train_labels = torch.load(proc_path + "train_labels.pt")
+    test_text = torch.load(proc_path + "test_text.pt")
+    test_labels = torch.load(proc_path + "test_labels.pt")
+
+    train = TensorDataset(train_text, train_labels)
+    test = TensorDataset(test_text, test_labels)
+
+    return train, test
 
 
 def preprocess(raw_data_path: Path, output_folder: Path, dataset_name: str, model: str) -> None:
@@ -82,14 +97,15 @@ def preprocess(raw_data_path: Path, output_folder: Path, dataset_name: str, mode
     dataset.preprocess(proc_dir=output_folder,dset_name=dataset_name,model_name=model)
 
 
+
 if __name__ == "__main__":
-    #typer.run(preprocess)
+    typer.run(preprocess)
     #dataset = load_dataset("PolyAI/banking77",trust_remote_code=True)
-    raw_data_path = Path("data/raw")
-    output_folder = Path("data/processed")
-    dataset = "PolyAI/banking77"
-    model = "huawei-noah/TinyBERT_General_4L_312D"
-    preprocess(raw_data_path,output_folder,dataset,model)
+    #raw_data_path = Path("data/raw")
+    #output_folder = Path("data/processed")
+    #dataset = "PolyAI/banking77"
+    #model = "huawei-noah/TinyBERT_General_4L_312D"
+    #preprocess(raw_data_path,output_folder,dataset,model)
     
     
     # Load model directly
