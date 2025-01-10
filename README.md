@@ -1,1 +1,28 @@
 # Group98_MLOps
+
+Adam Ledou s_____
+Ludvik Petersen s_____
+Martin Maximilian Ægidius s194119
+Troels Ludwig s_____
+
+Overall goal: 
+The main goal of the project is to classify the intent of sent customer queries, which potentially could improve efficiency for managing e-mail inboxes. The main goal of the project is to develop MLOps skill-sets. 
+
+#Frameworks 
+We intend to use the [HuggingFace Transformers](https://github.com/huggingface/transformers) framework. 
+We will use a base-model version as a baseline, and see if we can improve performance in a transfer-learning context.
+We plan to use hydra for configurations, and wandb for monitoring experiments. We decided against liveshare2 in order to gain more familiarity with git.  
+
+#Dataset 
+We will use the [banking77](https://huggingface.co/datasets/PolyAI/banking77) dataset consisting of 13083 english-languaged customer service queries with 77 intent labels. 
+
+#Model 
+We plan to use TinyBERT, which is a distilled version of BERT with approximately 15M parameters. We plan to use the CLS-token for the classification head (if they actually made it with a CLS-token). Alternatively, we will simply build the head on top of the encoded input. 
+
+
+
+
+
+
+
+
