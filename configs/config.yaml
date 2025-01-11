@@ -5,13 +5,13 @@ hydra:
     
 model:
   name: "huawei-noah/TinyBERT_General_4L_312D"
-  
+
 dataset:
   name: "PolyAI/banking77"
-  classes: 77
-  
+  num_labels: 77
+
 defaults:
-    - experiment: exp1
+    - experiment: overfit
     
   
  

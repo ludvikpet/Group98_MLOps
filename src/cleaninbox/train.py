@@ -5,7 +5,7 @@ import torch
 import typer
 from data import text_dataset
 from model import BertTypeClassification
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 import torch.nn as nn
 import matplotlib.pyplot as plt
@@ -17,23 +17,14 @@ from dotenv import load_dotenv
 from loguru import logger
 import wandb
 from transformers import AutoModel
+
 #
-    
 
-
-
-
-
-load_dotenv()
-wandb_entity = os.getenv("WANDB_ENTITY")
-wandb_project = os.getenv("WANDB_PROJECT")
-#wandb.login(key=os.getenv("WANDB_API_KEY"))
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 @hydra.main(version_base=None, config_path="../../configs",config_name="config")
 def train(cfg: DictConfig):
-#def train(lr: float = 1e-3, batch_size: int = 32, epochs: int = 2) -> None:
     """Train a model on banking77."""
     print(OmegaConf.to_yaml(cfg))
     hydra_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
@@ -43,26 +34,39 @@ def train(cfg: DictConfig):
     batch_size = hyperparameters.batch_size
     epochs = hyperparameters.epochs
     seed = hyperparameters.seed
+    num_samples = hyperparameters.num_samples
+
     model_name = cfg.model.name
+
     logger.info(f"Fetching model {model_name}")
-    model = BertTypeClassification(model_name,num_classes=77) #should be read from dataset config
+    model = BertTypeClassification(model_name,num_classes=cfg.dataset.num_labels) #should be read from dataset config
     print(model) 
 
     #join logger and hydra log
     logger.add(os.path.join(hydra_path, "my_logger_hydra.log"))
     logger.info(cfg)
     logger.info("Training day and night")
-    wandb.init(entity=wandb_entity,project=wandb_project,config=dict(hyperparameters))
-    
-
+    #handle wandb based on config 
+    if(cfg._group_.logging.log_wandb==True):
+        load_dotenv()
+        wandb_entity = os.getenv("WANDB_ENTITY")
+        wandb_project = os.getenv("WANDB_PROJECT")
+        wandb.init(entity=wandb_entity,project=wandb_project,config=dict(hyperparameters))
+        logger.debug("using wandb")
+    #wandb.login(key=os.getenv("WANDB_API_KEY"))
     torch.manual_seed(seed)
 
     logger.info(f"{lr=}, {batch_size=}, {epochs=}")
 
     model = model.to(DEVICE)
-    train_set, _ = text_dataset()
-    N_SAMPLES = len(train_set)
-    print(N_SAMPLES)
+    train_set, _ = text_dataset() #need to be variable based on cfg 
+    
+    if num_samples!=-1: #allow to only use a subset. 
+        N_SAMPLES = len(train_set)
+        num_samples = min(num_samples, N_SAMPLES)
+        subset_sizes = [num_samples, N_SAMPLES-num_samples] #train-subset and "other" subset (unused)
+        train_set, _ = random_split(train_set, subset_sizes, generator=torch.Generator().manual_seed(seed))
+    logger.debug(f"training on {len(train_set)} samples. The rest is discarded.")
     trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     del train_set
 
@@ -106,14 +110,18 @@ def train(cfg: DictConfig):
         epoch_loss = running_loss.item() / N_SAMPLES
         logger.info(f"Epoch {epoch}: {epoch_loss}")
         statistics["train_loss"].append(epoch_loss)
-        wandb.log({"train_loss":epoch_loss})
+        if(cfg._group_.logging.log_wandb==True):
+            wandb.log({"train_loss":epoch_loss})
 
     logger.info("Finished training")
     torch.save(model.state_dict(), f"{os.getcwd()}/model.pth") #save to hydra output (hopefully using chdir true)
-    artifact = wandb.Artifact(name="model",type="model")
-    artifact.add_file(local_path=f"{os.getcwd()}/model.pth",name="model.pth")
-    artifact.save()
     logger.info(f"Saved model to: f{os.getcwd()}/model.pth")
+    if(cfg._group_.logging.log_wandb==True):
+        artifact = wandb.Artifact(name="model",type="model")
+        artifact.add_file(local_path=f"{os.getcwd()}/model.pth",name="model.pth")
+        artifact.save()
+        logger.info(f"Saved model artifact to f{os.getcwd()}/model.pth")
+    
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     axs[0].plot(statistics["train_loss"])
     axs[0].set_title("Train loss")
@@ -121,7 +129,8 @@ def train(cfg: DictConfig):
     axs[1].set_title("Train accuracy")
     #fig.savefig("reports/figures/training_statistics.png") <- with no hydra configuration
     fig.savefig(f"{os.getcwd()}/training_statistics.png")   
-    wandb.log({"training statistics":wandb.Image(fig)}) #try to log an image 
+    if(cfg._group_.logging.log_wandb==True):
+        wandb.log({"training statistics":wandb.Image(fig)}) #try to log an image 
     
 if __name__ == "__main__":
     train()
