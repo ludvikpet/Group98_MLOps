@@ -48,10 +48,9 @@ def train(cfg: DictConfig):
     logger.info("Training day and night")
     #handle wandb based on config 
     if(cfg._group_.logging.log_wandb==True):
-        load_dotenv()
-        wandb_entity = os.getenv("WANDB_ENTITY")
-        wandb_project = os.getenv("WANDB_PROJECT")
-        wandb.init(entity=wandb_entity,project=wandb_project,config=dict(hyperparameters))
+        #load_dotenv()
+        #following could be optimized using specific wandb config with entity and project fields.
+        wandb.init(entity="cleaninbox_02476",project="banking77",config=dict(hyperparameters)) #inherits API key from environment by directly passing it when running container
         logger.debug("using wandb")
     #wandb.login(key=os.getenv("WANDB_API_KEY"))
     torch.manual_seed(seed)
@@ -85,7 +84,6 @@ def train(cfg: DictConfig):
             running_loss += loss
             loss.backward()
             optimizer.step()
-            running_loss += loss
             statistics["train_loss"].append(loss.item())
             accuracy = (logits.argmax(dim=1) == labels).float().mean().item()
             statistics["train_accuracy"].append(accuracy)
