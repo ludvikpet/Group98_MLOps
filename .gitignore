@@ -189,3 +189,4 @@ models/
 # data folder:
 data/raw/
 data/processed/
+/data
