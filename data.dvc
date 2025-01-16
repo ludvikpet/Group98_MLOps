@@ -1,6 +1,74 @@
 outs:
-- md5: 1c5ac7ea4b08606bad45d3c4af4be9e5.dir
-  size: 30564259
-  nfiles: 10
-  hash: md5
+- hash: md5
   path: data
+  files:
+  - relpath: processed/.gitkeep
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      remote_storage:
+        etag: 08ea9fffd49afa8a031001
+        version_id: '1737029371023338'
+  - relpath: processed/test_labels.pt
+    md5: 1cdfae5a48487ec866bba63417612b35
+    size: 25840
+    cloud:
+      remote_storage:
+        etag: 08bfa481d59afa8a031001
+        version_id: '1737029371056703'
+  - relpath: processed/test_text.pt
+    md5: ed7927a93f22d1282cfe4d0842f094d6
+    size: 6063266
+    cloud:
+      remote_storage:
+        etag: 08bde3c8d59afa8a031001
+        version_id: '1737029372228029'
+  - relpath: processed/train_labels.pt
+    md5: 433a8e53863631229915dde8c3a82b13
+    size: 81205
+    cloud:
+      remote_storage:
+        etag: 08f6c983d59afa8a031001
+        version_id: '1737029371094262'
+  - relpath: processed/train_text.pt
+    md5: 6a429a84f9e295650ce2454ff107d3ff
+    size: 23528745
+    cloud:
+      remote_storage:
+        etag: 08a2a7b2d59afa8a031001
+        version_id: '1737029371859874'
+  - relpath: raw/.gitkeep
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
+    cloud:
+      remote_storage:
+        etag: 08b297eed49afa8a031001
+        version_id: '1737029370743730'
+  - relpath: raw/test_labels.json
+    md5: ea07086bf2484f30441c379b2a7735c4
+    size: 11920
+    cloud:
+      remote_storage:
+        etag: 08c1b381d59afa8a031001
+        version_id: '1737029371058625'
+  - relpath: raw/test_text.json
+    md5: 931c73ea0d21576fa40af7c92e34f608
+    size: 179421
+    cloud:
+      remote_storage:
+        etag: 08cdc5f9d49afa8a031001
+        version_id: '1737029370929869'
+  - relpath: raw/train_labels.json
+    md5: be8bdcf6a1a1c78f6464510df2245861
+    size: 38609
+    cloud:
+      remote_storage:
+        etag: 0897d181d59afa8a031001
+        version_id: '1737029371062423'
+  - relpath: raw/train_text.json
+    md5: c55782d2a6c309c1046a89a39a04515d
+    size: 635253
+    cloud:
+      remote_storage:
+        etag: 089ad583d59afa8a031001
+        version_id: '1737029371095706'
