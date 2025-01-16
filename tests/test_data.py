@@ -8,10 +8,19 @@ import torch
 from cleaninbox.data import text_dataset
 from tests import _PROJECT_ROOT, _PATH_DATA
 
-#@pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
+@pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_text_dataset():
-    """Test the MyDataset class."""
-    cfg = omegaconf.OmegaConf.load(f"{_PROJECT_ROOT}/configs/config.yaml")
+    """
+    Unit tests the dataset defined in configs/config.yaml, ie. default dataset in hydraconfig. 
+    Checks: 
+        dataset length of train and test split to be corresponding to dataset documentation
+        shapes of returned tensors from the dataset
+        labels being corresponding to the dataset documentation
+    Skips if: 
+        directory root/data does not exist
+    """
+
+    cfg = omegaconf.OmegaConf.load(f"{_PROJECT_ROOT}/configs/config.yaml") #loads default hydra config 
     N_TRAIN_SAMPLES = cfg.dataset.num_train_samples
     N_TEST_SAMPLES = cfg.dataset.num_test_samples 
     N_CLASSES = cfg.dataset.num_labels
