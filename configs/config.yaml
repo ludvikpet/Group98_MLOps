@@ -9,6 +9,8 @@ model:
 dataset:
   name: "PolyAI/banking77"
   num_labels: 77
+  num_train_samples: 10003
+  num_test_samples: 3080
 
 defaults:
     - experiment: overfit
