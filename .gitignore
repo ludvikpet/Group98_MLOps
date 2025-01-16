@@ -1,7 +1,13 @@
+outputs/
+wandb/
 docs/site/
 
 # test cache
 manual_test/
+
+.env 
+data/
+models/
 
 # other local dev info
 .vscode/
@@ -139,6 +145,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.python-version
 env/
 venv/
 ENV/

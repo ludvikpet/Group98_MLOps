@@ -1,0 +1,5 @@
+# @package _group_
+
+dataset:
+  name: "PolyAI/banking77"
+  num_labels: 77

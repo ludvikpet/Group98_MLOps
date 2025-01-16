@@ -1,0 +1,20 @@
+#config.yaml
+hydra:
+  job: 
+    chdir: True
+    
+model:
+  name: "huawei-noah/TinyBERT_General_4L_312D"
+
+dataset:
+  name: "PolyAI/banking77"
+  num_labels: 77
+
+defaults:
+    - experiment: overfit
+    
+  
+ 
+    
+
+  

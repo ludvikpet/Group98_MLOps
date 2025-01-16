@@ -134,9 +134,8 @@ def text_dataset():
     train_labels = torch.load(proc_path + "train_labels.pt")
     test_text = torch.load(proc_path + "test_text.pt")
     test_labels = torch.load(proc_path + "test_labels.pt")
-
-    train = TensorDataset(train_text, train_labels)
-    test = TensorDataset(test_text, test_labels)
+    train = TensorDataset(train_text["input_ids"][:1000], train_text["token_type_ids"][:1000], train_text["attention_mask"][:1000],train_labels[:1000])
+    test = TensorDataset(test_text["input_ids"][:1000], test_text["token_type_ids"][:1000], test_text["attention_mask"][:1000], test_labels[:1000])
 
     return train, test    
 
