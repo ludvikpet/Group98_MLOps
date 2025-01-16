@@ -2,7 +2,7 @@
 import os 
 
 import torch
-import typer
+# import typer
 from data import text_dataset
 from model import BertTypeClassification
 from torch.utils.data import DataLoader, random_split
@@ -21,15 +21,18 @@ from transformers import AutoModel
 #
 
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-@hydra.main(version_base=None, config_path="../../configs",config_name="config")
+@hydra.main(version_base="1.1", config_path="../../configs",config_name="config")
 def train(cfg: DictConfig):
     """Train a model on banking77."""
+    
     print(OmegaConf.to_yaml(cfg))
+    
     hydra_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+    
     # Add a log file to the logger
-    hyperparameters = cfg._group_.hyperparameters
+    hyperparameters = cfg.experiment.hyperparameters
     lr = hyperparameters.lr
     batch_size = hyperparameters.batch_size
     epochs = hyperparameters.epochs
@@ -46,8 +49,9 @@ def train(cfg: DictConfig):
     logger.add(os.path.join(hydra_path, "my_logger_hydra.log"))
     logger.info(cfg)
     logger.info("Training day and night")
-    #handle wandb based on config 
-    if(cfg._group_.logging.log_wandb==True):
+    
+    #handle wandb based on config:
+    if(cfg.experiment.logging.log_wandb):
         load_dotenv()
         wandb_entity = os.getenv("WANDB_ENTITY")
         wandb_project = os.getenv("WANDB_PROJECT")
@@ -59,7 +63,7 @@ def train(cfg: DictConfig):
     logger.info(f"{lr=}, {batch_size=}, {epochs=}")
 
     model = model.to(DEVICE)
-    train_set, _ = text_dataset() #need to be variable based on cfg 
+    train_set, _, _ = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, seed) #need to be variable based on cfg 
     
     if num_samples!=-1: #allow to only use a subset. 
         N_SAMPLES = len(train_set)
@@ -110,13 +114,16 @@ def train(cfg: DictConfig):
         epoch_loss = running_loss.item() / N_SAMPLES
         logger.info(f"Epoch {epoch}: {epoch_loss}")
         statistics["train_loss"].append(epoch_loss)
-        if(cfg._group_.logging.log_wandb==True):
+        if(cfg.experiment.logging.log_wandb==True):
             wandb.log({"train_loss":epoch_loss})
 
     logger.info("Finished training")
-    torch.save(model.state_dict(), f"{os.getcwd()}/model.pth") #save to hydra output (hopefully using chdir true)
-    logger.info(f"Saved model to: f{os.getcwd()}/model.pth")
-    if(cfg._group_.logging.log_wandb==True):
+
+    if cfg.model.save_model:
+        torch.save(model.state_dict(), f"{os.getcwd()}/model.pth") #save to hydra output (hopefully using chdir true)
+        logger.info(f"Saved model to: f{os.getcwd()}/model.pth")
+    
+    if(cfg.experiment.logging.log_wandb==True):
         artifact = wandb.Artifact(name="model",type="model")
         artifact.add_file(local_path=f"{os.getcwd()}/model.pth",name="model.pth")
         artifact.save()
@@ -129,7 +136,7 @@ def train(cfg: DictConfig):
     axs[1].set_title("Train accuracy")
     #fig.savefig("reports/figures/training_statistics.png") <- with no hydra configuration
     fig.savefig(f"{os.getcwd()}/training_statistics.png")   
-    if(cfg._group_.logging.log_wandb==True):
+    if(cfg.experiment.logging.log_wandb==True):
         wandb.log({"training statistics":wandb.Image(fig)}) #try to log an image 
     
 if __name__ == "__main__":

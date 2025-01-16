@@ -10,9 +10,10 @@ from transformers import BertTokenizer
 import torch 
 from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from loguru import logger
 import sys
+from torch.utils.data import random_split
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
@@ -87,10 +88,10 @@ class MyDataset(Dataset):
             json.dump(test_labels_l,f)
 
 
-@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
-def text_dataset(cfg: DictConfig) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
-    logger.info(f"Loading processed data: {cfg.dataset.name}")
-    proc_path = Path(cfg.basic.proc_path) / Path(cfg.dataset.name).stem
+
+def text_dataset(val_size, proc_path, dataset_name, seed) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
+    logger.info(f"Loading processed data: {dataset_name}")
+    proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem
 
     # Get processed data:
     train_text = torch.load(proc_path / "train_text.pt")
@@ -101,10 +102,12 @@ def text_dataset(cfg: DictConfig) -> Tuple[TensorDataset, TensorDataset, TensorD
     test = TensorDataset(test_text["input_ids"], test_text["token_type_ids"], test_text["attention_mask"], test_labels)
 
     # Split training data into training and validation sets:
-    if cfg.dataset.val_size > 0:
-        val_size = int(len(train) * cfg.dataset.val_size / 100)
+    if val_size > 0:
+        val_size = int(len(train) * val_size)
         train_size = len(train) - val_size
-        train, val = torch.utils.data.random_split(train, [train_size, val_size])
+        train, val = random_split(train, [train_size, val_size], generator=torch.Generator().manual_seed(seed))
+
+
         return train, val, test
     
     return train, None, test
@@ -115,6 +118,11 @@ def preprocess(cfg: DictConfig) -> None:
     dataset = MyDataset(cfg.dataset.name, raw_dir=cfg.basic.raw_path, proc_dir=cfg.basic.proc_path)
     dataset.preprocess(model_name=cfg.model.name)
 
+@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
+def run_text_dataset(cfg: DictConfig) -> None:
+    train, val, test = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, cfg.experiment.hyperparameters.seed)
+    logger.info(f"Train size: {len(train)}, Val size: {len(val)}, Test size: {len(test)}")
 
 if __name__ == "__main__":
-    preprocess()
+    # preprocess()
+    run_text_dataset()
