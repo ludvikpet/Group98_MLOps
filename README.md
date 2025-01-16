@@ -97,8 +97,9 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 - Ludvik atm building API for online inference, I believe 
 
 # To do friday
+- Let us please clean up .gitignore, it looks pretty bad, don't know if it behaves as supposed - this could possibly mitigate the need of .gcloudignore for building docker
 - invitations to bucket 
-- finish API
+- (finish?) API
 - Ensure model is fully deployable in cloud using vertex 
 - Add wandb secrets to gcloud 
 - Do a hyperparameter sweep on full trainset 
