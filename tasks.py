@@ -38,7 +38,7 @@ def preprocess_data(ctx: Context) -> None:
 @task
 def train(ctx: Context) -> None:
     """Train model."""
-    ctx.run(f"python src/{PROJECT_NAME}/train.py", echo=True, pty=not WINDOWS)
+    ctx.run(f"python src/{PROJECT_NAME}/train.py +basic.train=true", echo=True, pty=not WINDOWS)
 
 @task
 def test(ctx: Context) -> None:

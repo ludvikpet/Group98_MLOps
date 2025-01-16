@@ -1,32 +1,30 @@
 from pathlib import Path
 import json
-from datasets import load_dataset, dataset_dict
-from transformers import AutoTokenizer, AutoModel
-import sys
+from typing import Tuple
+
+from datasets import load_dataset 
+from torch.utils.data import Dataset, TensorDataset
+import datasets
+from loguru import logger
+from transformers import BertTokenizer
+import torch 
+from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
 import hydra
 from omegaconf import DictConfig
-from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
-import torch
-from torch.utils.data import TensorDataset
-
-
-# import typer
-from torch.utils.data import Dataset
 from loguru import logger
+import sys
 
-# Initialize the logger:
 logger.remove()
-logger.add(sys.stderr, format="<green>{time}</green> | <level>{level}</level> | {message}")
-# logger.add("reports/logs/data.log", rotation="10 MB", format="<green>{time}</green> | <level>{level}</level> | {message}")
+logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
 
 class MyDataset(Dataset):
     """My custom dataset."""
 
-    def __init__(self, raw_data_path: Path, model_name: str) -> None:
+    def __init__(self, raw_data_path: Path, raw_dir: Path, proc_dir: Path) -> None:
         self.data_path = raw_data_path
-        self.model_name = model_name
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-
+        self.raw_dir = Path(to_absolute_path(raw_dir)) / Path(self.data_path).stem
+        self.proc_dir = Path(to_absolute_path(proc_dir)) / Path(self.data_path).stem
+        logger.info(f"Raw data path: {self.raw_dir}")
 
     def __len__(self) -> int:
         """Return the length of the dataset."""
@@ -34,110 +32,89 @@ class MyDataset(Dataset):
     def __getitem__(self, index: int):
         """Return a given sample from the dataset."""
 
-    def tokenize_data(self, data) -> torch.Tensor:
-            encoding = self.tokenizer(data["text"],  # List of input texts
-            padding=True,                       # Pad to the maximum sequence length
-            truncation=False,                   # Truncate to the maximum sequence length if necessary
-            return_tensors='pt',                # Return PyTorch tensors
-            add_special_tokens=True             # Add special tokens CLS and SEP <- possibly uneeded 
-            )
-            return encoding["input_ids"]
-    
     @logger.catch(level="ERROR")
-    def download_data(self, dset_name: str) -> dataset_dict.DatasetDict:
+    def download_data(self, dset_name: str) -> datasets.dataset_dict.DatasetDict:
         logger.info(f"Collecting and unpacking dataset {dset_name}.")
-        dataset = load_dataset(dset_name, split="train+test", trust_remote_code=True)
+        dataset = load_dataset(dset_name,trust_remote_code=True)
         return dataset
 
+    def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
+        encoding = tokenizer(text,# List of input texts
+        padding=True,              # Pad to the maximum sequence length
+        truncation=False,           # Truncate to the maximum sequence length if necessary
+        return_tensors='pt',      # Return PyTorch tensors
+        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
+        )
+        return encoding
+
     @logger.catch(level="ERROR")
-    def preprocess(self, output_folder: Path) -> None:
-
-        # Load raw data and create train/val/test splits:
-        dataset = self.download_data(str(self.data_path))
-        split = dataset.train_test_split(test_size=0.2, seed=42)
-        split2 = split["test"].train_test_split(test_size=0.5, seed=42)
+    def preprocess(self, model_name: str) -> None:
         
-        # Get the train, validation, and test data:
-        train_data = split["train"]
-        val_data = split2["train"]
-        test_data = split2["test"]
-        
-        # Load raw data and create train/val/test splits:
-        dataset = load_dataset(cfg.hf.dataset_path, split="train+test")
-        split = dataset.train_test_split(test_size=0.2, seed=42)
-        split2 = split["test"].train_test_split(test_size=0.5, seed=42)
-        
-        # Get the train, validation, and test data:
-        train_data = split["train"]
-        val_data = split2["train"]
-        test_data = split2["test"]
+        # Load data:
+        dataset = self.download_data(self.data_path)
+        train_text_l, train_labels_l = dataset["train"]["text"], dataset["train"]["label"]
+        test_text_l, test_labels_l = dataset["test"]["text"], dataset["test"]["label"]
 
-        logger.info("Train example: {}".format(train_data[0]))
-        logger.info(f"Train size: {len(train_data)}, Validation size: {len(val_data)}, Test size: {len(test_data)}")
+        #tokenize data:
+        tokenizer = BertTokenizer.from_pretrained(model_name)
+        train_text = self.tokenize_data(train_text_l,tokenizer) # N x maxSeqLen 
+        test_text = self.tokenize_data(test_text_l,tokenizer) # N x maxSeqLen
 
-        # Tokenize the data:
-        token_train_data_l = train_data.map(self.tokenize_data, batched=True)  # N x MaxSeqLen
-        token_val_data_l = val_data.map(self.tokenize_data, batched=True)      # N x MaxSeqLen
-        token_test_data_l = test_data.map(self.tokenize_data, batched=True)    # N x MaxSeqLen
+        train_labels = torch.tensor(train_labels_l).long()
+        test_labels = torch.tensor(test_labels_l).long()
 
-        logger.info("Tokenized train example: {}".format(self.tokenizer(train_data[0]["text"])))
-        
-        # Transform labels to tensors:
-        train_data["label"] = torch.tensor(train_data["label"])
-        val_data["label"] = torch.tensor(val_data["label"])
-        test_data["label"] = torch.tensor(test_data["label"])
-        
-        # Save the processed data:
-        output_folder.mkdir(parents=True, exist_ok=True)
-        torch.save(token_train_data_l["input_ids"], output_folder / "train_text.pt")
-        torch.save(train_data["label"], output_folder / "train_labels.pt")
-        torch.save(token_val_data_l["input_ids"], output_folder / "val_text.pt")
-        torch.save(val_data["label"], output_folder / "val_labels.pt")
-        torch.save(token_test_data_l["input_ids"], output_folder / "test_text.pt")
-        torch.save(test_data["label"], output_folder / "test_labels.pt")
+        # Save processed data:
+        logger.info(f"Saving processed data to {self.proc_dir}.")
+        self.proc_dir.mkdir(parents=True, exist_ok=True)
+        torch.save(train_text, self.proc_dir / "train_text.pt")
+        torch.save(train_labels, self.proc_dir / "train_labels.pt")
+        torch.save(test_text, self.proc_dir / "test_text.pt")
+        torch.save(test_labels, self.proc_dir / "test_labels.pt")
 
-@hydra.main(config_path="configs", config_name="data.yaml", version_base="1.1")
+        # Save raw data:
+        logger.info(f"Saving raw data to {self.raw_dir}.")
+        self.raw_dir.mkdir(parents=True, exist_ok=True)
+        with open(self.raw_dir / "train_text.json", 'w') as f: 
+            json.dump(train_text_l,f)
+
+        with open(self.raw_dir / "train_labels.json", 'w') as f: 
+            json.dump(train_labels_l,f)
+
+        with open(self.raw_dir / "test_text.json", 'w') as f: 
+            json.dump(test_text_l,f)
+
+        with open(self.raw_dir / "test_labels.json", 'w') as f: 
+            json.dump(test_labels_l,f)
+
+
+@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
+def text_dataset(cfg: DictConfig) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
+    logger.info(f"Loading processed data: {cfg.dataset.name}")
+    proc_path = Path(cfg.basic.proc_path) / Path(cfg.dataset.name).stem
+
+    # Get processed data:
+    train_text = torch.load(proc_path / "train_text.pt")
+    train_labels = torch.load(proc_path / "train_labels.pt")
+    test_text = torch.load(proc_path / "test_text.pt")
+    test_labels = torch.load(proc_path / "test_labels.pt")
+    train = TensorDataset(train_text["input_ids"], train_text["token_type_ids"], train_text["attention_mask"],train_labels)
+    test = TensorDataset(test_text["input_ids"], test_text["token_type_ids"], test_text["attention_mask"], test_labels)
+
+    # Split training data into training and validation sets:
+    if cfg.dataset.val_size > 0:
+        val_size = int(len(train) * cfg.dataset.val_size / 100)
+        train_size = len(train) - val_size
+        train, val = torch.utils.data.random_split(train, [train_size, val_size])
+        return train, val, test
+    
+    return train, None, test
+
+@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
 def preprocess(cfg: DictConfig) -> None:
-
     logger.info("Preprocessing data...")
-    
-    dataset = MyDataset(Path(cfg.hf.dataset_path), cfg.hf.model_name)
-    output_folder = Path("data/processed") / Path(cfg.hf.dataset_path).stem
+    dataset = MyDataset(cfg.dataset.name, raw_dir=cfg.basic.raw_path, proc_dir=cfg.basic.proc_path)
+    dataset.preprocess(model_name=cfg.model.name)
 
-    dataset.preprocess(output_folder=output_folder)
-
-def produce_raw_data(raw_dir, train_data, val_data, test_data):
-
-    with open(raw_dir/"train_text.json", 'w') as f: 
-        json.dump(train_data["text"],f)
-    
-    with open(raw_dir/"train_labels.json", 'w') as f: 
-        json.dump(train_data["label"],f)
-    
-    with open(raw_dir/"val_text.json", 'w') as f:
-        json.dump(val_data["text"],f)
-    
-    with open(raw_dir/"val_labels.json", 'w') as f:
-        json.dump(val_data["label"],f)
-    
-    with open(raw_dir/"test_text.json", 'w') as f:
-        json.dump(test_data["text"],f)
-    
-    with open(raw_dir/"test_labels.json", 'w') as f:
-        json.dump(test_data["label"],f)
-
-# Get processed data:
-def text_dataset():
-    proc_path = to_absolute_path("data/processed/")+"/"
-
-    train_text = torch.load(proc_path + "train_text.pt")
-    train_labels = torch.load(proc_path + "train_labels.pt")
-    test_text = torch.load(proc_path + "test_text.pt")
-    test_labels = torch.load(proc_path + "test_labels.pt")
-    train = TensorDataset(train_text["input_ids"][:1000], train_text["token_type_ids"][:1000], train_text["attention_mask"][:1000],train_labels[:1000])
-    test = TensorDataset(test_text["input_ids"][:1000], test_text["token_type_ids"][:1000], test_text["attention_mask"][:1000], test_labels[:1000])
-
-    return train, test    
 
 if __name__ == "__main__":
     preprocess()

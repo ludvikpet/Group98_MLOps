@@ -1,3 +1,0 @@
-hf:
-  model_name: huawei-noah/TinyBERT_General_4L_312D
-  dataset_path: legacy-datasets/banking77

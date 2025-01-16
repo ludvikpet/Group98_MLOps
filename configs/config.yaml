@@ -10,10 +10,16 @@ dataset:
   name: "PolyAI/banking77"
   num_labels: 77
 
+basic:
+  raw_path: "./data/raw/"
+  proc_path: "./data/processed/"
+  models: "./models/"
+  train: false
+
 defaults:
     - experiment: overfit
     
-  
+
  
     
 
