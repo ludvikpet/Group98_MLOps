@@ -1,0 +1,7 @@
+#respect gitignore:
+#.gitignore 
+#force include 
+!dockerfiles/*
+!cloudbuild.yaml
+#data/
+

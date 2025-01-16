@@ -77,3 +77,31 @@ The directory structure of the project looks like this:
 ├── requirements_dev.txt      # Development requirements
 └── tasks.py                  # Project tasks
 ```
+
+# Martin & Ludviks thursday log 
+added unittests for model outputs and dataset (note: skipped train unittest)
+- refactored data.py
+- added github actions with unittests for python 3.11 on ubuntu, mac, windows (model and text_dataset) 
+- running docker build with torch no cuda version for quick debugging. Ensuring wandb auth works 
+	- docker run -e WANDB_API_KEY=<your-api-key> wandb:latest
+- made dvc init + added bucket banking77 to dvc. 
+- Made cloud bucket in gcs - give max emails for invitation pls
+	- todo: add Adam Troels storage object admin
+- added docker artifact registry located at europe-west1-docker.pkg.dev/cleaninbox-448011/container-registry 
+(had to add service account logging permissions: gcloud projects add-iam-policy-binding cleaninbox-448011 \ --member="serviceAccount:170780472924-compute@developer.gserviceaccount.com" \ --role="roles/logging.logWriter")
+
+- active: make cloudbuild - 
+current status: build fails when not running with .gcloudignore which explicitly forcing includes !dockerfiles/* !cloudbuild.yaml. Seems to be an issue with .gitignore, as .gitignore is sourced automatically during cloud build when no .gcloudignore is present.
+Need to figure out why this is the case. ChatGPT says that it is probably because of repetitions in gitignore and cloudbuild. Need to check gitignore for multiple exclusions and ensure correctness of subdirs.
+
+- Ludvik atm building API for online inference, I believe 
+
+# To do friday
+- invitations to bucket 
+- finish API
+- Ensure model is fully deployable in cloud using vertex 
+- Add wandb secrets to gcloud 
+- Do a hyperparameter sweep on full trainset 
+- Log samples during training with plot of input sentence and top-5 prediction class distributions. Losses seem too low. 
+
+
