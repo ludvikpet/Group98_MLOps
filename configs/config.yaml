@@ -19,7 +19,7 @@ basic:
   proc_path: "./data/processed/"
   proc_banking_data: "${proc_path}banking77/"
   models: "./models/"
-  current_model: "${models}model.pth"
+  model_ckpt: "${models}model.pth"
 
 defaults:
     - experiment: overfit
