@@ -19,6 +19,10 @@ basic:
   proc_path: "./data/processed/"
   models: "./models/"
   train: False
+  
+environment: 
+  log_wandb: False
+  run_in_cloud: True
 
 defaults:
     - experiment: overfit

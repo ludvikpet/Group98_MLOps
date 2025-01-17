@@ -92,6 +92,7 @@ class MyDataset(Dataset):
 def text_dataset(val_size, proc_path, dataset_name, seed) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
     logger.info(f"Loading processed data: {dataset_name}")
     proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem
+        
 
     # Get processed data:
     train_text = torch.load(proc_path / "train_text.pt")

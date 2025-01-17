@@ -25,6 +25,10 @@ from transformers import AutoModel
 @hydra.main(version_base="1.1", config_path="../../configs",config_name="config")
 def train(cfg: DictConfig):
     """Train a model on banking77."""
+    environment_cfg = cfg.environment
+    if(environment_cfg.run_in_cloud==True):
+        cfg.basic.proc_path = ("gs://banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
+        cfg.basic.raw_path = ("gs://banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
     
     print(OmegaConf.to_yaml(cfg))
     
@@ -40,7 +44,7 @@ def train(cfg: DictConfig):
     num_samples = hyperparameters.num_samples
 
     model_name = cfg.model.name
-
+    
     logger.info(f"Fetching model {model_name}")
     model = BertTypeClassification(model_name,num_classes=cfg.dataset.num_labels) #should be read from dataset config
     print(model) 
@@ -50,7 +54,7 @@ def train(cfg: DictConfig):
     logger.info(cfg)
     logger.info("Training day and night")
     #handle wandb based on config 
-    if(cfg.experiment.logging.log_wandb==True):
+    if(environment_cfg.log_wandb==True):
         #load_dotenv()
         #following could be optimized using specific wandb config with entity and project fields.
         wandb.init(entity="cleaninbox_02476",project="banking77",config=dict(hyperparameters)) #inherits API key from environment by directly passing it when running container
@@ -111,7 +115,7 @@ def train(cfg: DictConfig):
         epoch_loss = running_loss.item() / N_SAMPLES
         logger.info(f"Epoch {epoch}: {epoch_loss}")
         statistics["train_loss"].append(epoch_loss)
-        if(cfg.experiment.logging.log_wandb==True):
+        if(environment_cfg.log_wandb==True):
             wandb.log({"train_loss":epoch_loss})
 
     logger.info("Finished training")
@@ -120,7 +124,7 @@ def train(cfg: DictConfig):
         torch.save(model.state_dict(), f"{os.getcwd()}/model.pth") #save to hydra output (hopefully using chdir true)
         logger.info(f"Saved model to: f{os.getcwd()}/model.pth")
     
-    if(cfg.experiment.logging.log_wandb==True):
+    if(environment_cfg.log_wandb==True):
         artifact = wandb.Artifact(name="model",type="model")
         artifact.add_file(local_path=f"{os.getcwd()}/model.pth",name="model.pth")
         artifact.save()
@@ -133,7 +137,7 @@ def train(cfg: DictConfig):
     axs[1].set_title("Train accuracy")
     #fig.savefig("reports/figures/training_statistics.png") <- with no hydra configuration
     fig.savefig(f"{os.getcwd()}/training_statistics.png")   
-    if(cfg.experiment.logging.log_wandb==True):
+    if(environment_cfg.log_wandb==True):
         wandb.log({"training statistics":wandb.Image(fig)}) #try to log an image 
     
 if __name__ == "__main__":
