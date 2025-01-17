@@ -104,5 +104,7 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 - Add wandb secrets to gcloud 
 - Do a hyperparameter sweep on full trainset 
 - Log samples during training with plot of input sentence and top-5 prediction class distributions. Losses seem too low. 
+- Build script for inference only
+- Add unittest for train.py 
 
 
