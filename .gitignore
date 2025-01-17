@@ -205,3 +205,4 @@ data/raw/
 data/processed/
 tests/outputs/
 tests/output/
+/models
