@@ -5,6 +5,7 @@ loguru==0.7.3
 matplotlib==3.10.0
 omegaconf==2.3.0
 pytest==8.3.4
+pytest-mock==3.14.0
 python-dotenv==1.0.1
 #torch==2.5.1+cu118 excluded for now - directly installed in docker so that we can debug with no cuda (faster build)
 transformers==4.47.1
