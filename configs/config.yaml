@@ -1,8 +1,8 @@
 #config.yaml
 hydra:
-  job: 
+  job:
     chdir: True
-    
+
 model:
   name: "huawei-noah/TinyBERT_General_4L_312D"
   save_model: False
@@ -22,9 +22,9 @@ basic:
 
 defaults:
     - experiment: overfit
-    
+    - optimizer: adam
 
- 
-    
 
-  
+
+
+
