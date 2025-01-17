@@ -1,4 +1,5 @@
 # Group98_MLOps
+Now an org!
 
 *Adam Ledou, s204216*  <br>
 *Ludvik Petersen, s194613*  <br>
