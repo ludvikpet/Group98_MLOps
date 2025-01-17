@@ -13,7 +13,7 @@ data/
 # test cache
 manual_test/
 
-
+gcloud_vertex/
 
 .env 
 data/*

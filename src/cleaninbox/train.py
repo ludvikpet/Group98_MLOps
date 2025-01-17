@@ -27,8 +27,8 @@ def train(cfg: DictConfig):
     """Train a model on banking77."""
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
-        cfg.basic.proc_path = ("gs://banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
-        cfg.basic.raw_path = ("gs://banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
+        cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
+        cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
     
     print(OmegaConf.to_yaml(cfg))
     
