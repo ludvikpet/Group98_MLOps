@@ -22,8 +22,8 @@ basic:
   train: False
   
 environment: 
-  log_wandb: True
-  run_in_cloud: False
+  log_wandb: False
+  run_in_cloud: True
   model_ckpt: "${models}model.pth"
 
 defaults:
