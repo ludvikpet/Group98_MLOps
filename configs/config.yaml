@@ -5,7 +5,7 @@ hydra:
     
 model:
   name: "huawei-noah/TinyBERT_General_4L_312D"
-  save_model: False
+  save_model: True
 
 dataset:
   name: "PolyAI/banking77"
@@ -17,12 +17,14 @@ dataset:
 basic:
   raw_path: "./data/raw/"
   proc_path: "./data/processed/"
+  proc_banking_data: "${proc_path}banking77/"
   models: "./models/"
   train: False
   
 environment: 
   log_wandb: False
   run_in_cloud: True
+  model_ckpt: "${models}model.pth"
 
 defaults:
     - experiment: overfit
