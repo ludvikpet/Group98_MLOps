@@ -107,7 +107,6 @@ def text_dataset(val_size, proc_path, dataset_name, seed) -> Tuple[TensorDataset
         train_size = len(train) - val_size
         train, val = random_split(train, [train_size, val_size], generator=torch.Generator().manual_seed(seed))
 
-
         return train, val, test
     
     return train, None, test

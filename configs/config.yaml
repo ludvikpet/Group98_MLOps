@@ -17,8 +17,9 @@ dataset:
 basic:
   raw_path: "./data/raw/"
   proc_path: "./data/processed/"
+  proc_banking_data: "${proc_path}banking77/"
   models: "./models/"
-  train: False
+  current_model: "${models}model.pth"
 
 defaults:
     - experiment: overfit

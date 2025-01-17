@@ -15,7 +15,11 @@ COPY src/cleaninbox/api src/
 COPY requirements_backend.txt requirements.txt
 COPY pyproject.toml pyproject.toml
 
-RUN pip install -r requirements.txt --no-cache-dir --verbose
+RUN pip install -r requirements.txt --no-cache-dir --verbose 
+
+# Only used for local fast docker build:
+RUN pip install torch~=2.5.1 -i https://download.pytorch.org/whl/cpu
+
 RUN pip install . --no-deps --no-cache-dir --verbose
 
 # CMD exec uvicorn api_backend:app --port $PORT --host 0.0.0.0 --workers 1
