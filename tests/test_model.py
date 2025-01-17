@@ -2,7 +2,6 @@ import omegaconf
 import pytest
 import torch
 from torch.optim import Adam
-import hydra
 
 from cleaninbox.model import BertTypeClassification
 from tests import _PROJECT_ROOT, _VOCAB_SIZE
@@ -47,17 +46,15 @@ class TestModel:
         logits = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         assert logits.shape == (batch_size, config.dataset.num_labels), "Incorrect output shape. Expected (batch_size, num_labels)"
 
+    @pytest.mark.skip(reason = "This test is being carried out in test_train.py") # TODO probably delete this test, since we test for it in test_train
     def test_model_parameter_updates(self, model, mock_data, config):
         """Test that the model parameters are updated during training"""
         # Instantiate the optimizer with Hydra's 'intsantiate' function
-        optimizer = Adam(model.parameters(), lr=1e-3)
-
-        # Just choose a batch size, as this is not what we are testing here
-        batch_size = 16
+        optimizer = Adam(model.parameters(), lr=config.unittest.train.lr)
 
         # Generate mock data and random labels
-        input_ids, token_type_ids, attention_mask = mock_data(batch_size)
-        labels = torch.randint(0, config.dataset.num_labels, (batch_size,), dtype=torch.long)
+        input_ids, token_type_ids, attention_mask = mock_data(config.unittest.train.batch_size)
+        labels = torch.randint(0, config.dataset.num_labels, (config.unittest.train.batch_size,), dtype=torch.long)
 
         # Training steps
         model.train()
