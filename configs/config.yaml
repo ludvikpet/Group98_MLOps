@@ -17,15 +17,10 @@ dataset:
 basic:
   raw_path: "./data/raw/"
   proc_path: "./data/processed/"
-  proc_banking_data: "${proc_path}banking77/"
+  proc_banking_data: "${basic.proc_path}banking77/"
   models: "./models/"
-  model_ckpt: "${models}model.pth"
+  model_ckpt: "${basic.models}model.pth"  # Use the correct interpolation key
 
 defaults:
     - experiment: overfit
     
-
- 
-    
-
-  
