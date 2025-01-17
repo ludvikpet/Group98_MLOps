@@ -8,7 +8,7 @@ import torch
 from cleaninbox.data import text_dataset
 from tests import _PROJECT_ROOT, _PATH_DATA
 
-@pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
+@pytest.mark.skipif(not os.path.exists(_PATH_DATA+"processed/"), reason="Data files not found")
 def test_text_dataset():
     """
     Unit tests the dataset defined in configs/config.yaml, ie. default dataset in hydraconfig. 

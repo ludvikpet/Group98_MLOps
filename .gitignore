@@ -1,3 +1,7 @@
+#force include 
+!dockerfiles/*
+!cloudbuild.yaml
+
 outputs/
 wandb/
 docs/site/
@@ -5,8 +9,13 @@ docs/site/
 # test cache
 manual_test/
 
+# data folder:
+data/raw/
+data/processed/
+data/*
+
 .env 
-data/
+data/*
 models/
 
 # other local dev info
@@ -186,6 +195,13 @@ cython_debug/
 # Models folder:
 models/
 
-# data folder:
+
+wandb/
+docs/site/
+outputs/
+reports/
+models/
 data/raw/
 data/processed/
+tests/outputs/
+tests/output/
