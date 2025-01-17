@@ -2,12 +2,12 @@ from pathlib import Path
 import json
 from typing import Tuple
 
-from datasets import load_dataset 
+from datasets import load_dataset
 from torch.utils.data import Dataset, TensorDataset
 import datasets
 from loguru import logger
 from transformers import BertTokenizer
-import torch 
+import torch
 from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
 import hydra
 from omegaconf import DictConfig, OmegaConf
@@ -44,13 +44,13 @@ class MyDataset(Dataset):
         padding=True,              # Pad to the maximum sequence length
         truncation=False,           # Truncate to the maximum sequence length if necessary
         return_tensors='pt',      # Return PyTorch tensors
-        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
+        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded
         )
         return encoding
 
     @logger.catch(level="ERROR")
     def preprocess(self, model_name: str) -> None:
-        
+
         # Load data:
         dataset = self.download_data(self.data_path)
         train_text_l, train_labels_l = dataset["train"]["text"], dataset["train"]["label"]
@@ -58,7 +58,7 @@ class MyDataset(Dataset):
 
         #tokenize data:
         tokenizer = BertTokenizer.from_pretrained(model_name)
-        train_text = self.tokenize_data(train_text_l,tokenizer) # N x maxSeqLen 
+        train_text = self.tokenize_data(train_text_l,tokenizer) # N x maxSeqLen
         test_text = self.tokenize_data(test_text_l,tokenizer) # N x maxSeqLen
 
         train_labels = torch.tensor(train_labels_l).long()
@@ -75,23 +75,23 @@ class MyDataset(Dataset):
         # Save raw data:
         logger.info(f"Saving raw data to {self.raw_dir}.")
         self.raw_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.raw_dir / "train_text.json", 'w') as f: 
+        with open(self.raw_dir / "train_text.json", 'w') as f:
             json.dump(train_text_l,f)
 
-        with open(self.raw_dir / "train_labels.json", 'w') as f: 
+        with open(self.raw_dir / "train_labels.json", 'w') as f:
             json.dump(train_labels_l,f)
 
-        with open(self.raw_dir / "test_text.json", 'w') as f: 
+        with open(self.raw_dir / "test_text.json", 'w') as f:
             json.dump(test_text_l,f)
 
-        with open(self.raw_dir / "test_labels.json", 'w') as f: 
+        with open(self.raw_dir / "test_labels.json", 'w') as f:
             json.dump(test_labels_l,f)
 
 
 
 def text_dataset(val_size, proc_path, dataset_name, seed) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
     logger.info(f"Loading processed data: {dataset_name}")
-    proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem
+    proc_path = Path(to_absolute_path(proc_path))
 
     # Get processed data:
     train_text = torch.load(proc_path / "train_text.pt")
@@ -109,7 +109,7 @@ def text_dataset(val_size, proc_path, dataset_name, seed) -> Tuple[TensorDataset
 
 
         return train, val, test
-    
+
     return train, None, test
 
 @hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")

@@ -20,6 +20,18 @@ basic:
   models: "./models/"
   train: False
 
+unittest:
+  data:
+
+  model:
+    input_size: 128
+
+  train:
+    epochs: 1
+    batch_size: 16
+    lr: 1e-3
+    seed: 42
+
 defaults:
     - experiment: overfit
     - optimizer: adam

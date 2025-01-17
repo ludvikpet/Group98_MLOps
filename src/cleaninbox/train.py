@@ -3,7 +3,7 @@ import os
 
 import torch
 # import typer
-from data import text_dataset
+from cleaninbox.data import text_dataset
 from cleaninbox.model import BertTypeClassification
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
