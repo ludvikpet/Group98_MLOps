@@ -11,6 +11,7 @@ dataset:
   name: "PolyAI/banking77"
   num_labels: 77
   val_size: 0.2
+  input_size: 128
   num_train_samples: 10003
   num_test_samples: 3080
 
@@ -21,7 +22,7 @@ basic:
   train: False
 
 defaults:
-    - experiment: overfit
+    - experiment: base
     - optimizer: adam
 
 
