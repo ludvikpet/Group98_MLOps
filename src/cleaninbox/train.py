@@ -29,7 +29,7 @@ def train(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
 
     hydra_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Add a log file to the logger
     hyperparameters = cfg.experiment.hyperparameters

@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 import omegaconf
 from unittest.mock import MagicMock
@@ -17,7 +18,7 @@ from tests import _PROJECT_ROOT, _VOCAB_SIZE, _TEST_ROOT
 @pytest.fixture
 def config():
     """Pytest fixture which loads the configuration file."""
-    cfg = omegaconf.OmegaConf.load(f"{_PROJECT_ROOT}/configs/config.yaml")
+    cfg = omegaconf.OmegaConf.load(f"{_PROJECT_ROOT}/configs/tests/test.yaml")
     return cfg
 
 @pytest.fixture
@@ -26,23 +27,13 @@ def model(config):
     return BertTypeClassification(model_name=config.model.name, num_classes=config.dataset.num_labels)
 
 @pytest.fixture
-def mock_data(config):
+def mock_data():
     """Fixture for a mock dataset."""
-    def _generate(size=config.unittest.train.batch_size, seq_len=128):
-        data = torch.randint(0, _VOCAB_SIZE, (size, seq_len))
-        labels = torch.randint(0, config.dataset.num_labels, (size,))
+    def _generate(config, batch_size, input_size):
+        data = torch.randint(0, _VOCAB_SIZE, (batch_size, input_size))
+        labels = torch.randint(0, config.dataset.num_labels, (batch_size,))
         return data, labels
     return _generate
-
-@pytest.fixture
-def mock_wandb(mocker):
-    """Mock wandb integration."""
-    return mocker.patch("wandb.init", return_value=MagicMock())
-
-@pytest.fixture
-def mock_torch_save(mocker):
-    """Mock torch.save."""
-    return mocker.patch("torch.save", autospec=True)
 
 @pytest.fixture
 def mock_hydra_config(mocker):
@@ -73,32 +64,29 @@ class TestTraining:
     """
 
     @staticmethod
-    def test_loss_functionality(config, model, mock_data):
+    def test_parameter_updates(config, model, mock_data, mock_hydra_config):
         """Test that the loss function behaves as expected."""
-        criterion = torch.nn.CrossEntropyLoss()
-        optimizer = Adam(model.parameters(), lr=config.unittest.train.lr)
-        data, labels = mock_data(config.unittest.train.batch_size)
+        with initialize(config_path="../configs/tests", version_base="1.1"):
+          # Compose the configuration for the test
+          cfg = compose(config_name="test")
 
-        logits = model(data)
-        loss = criterion(logits, labels)
-        assert loss.item() > 0, "Loss should be positive for random initialization"
+          criterion = torch.nn.CrossEntropyLoss()
+          optimizer = Adam(model.parameters(), lr=cfg.experiment.hyperparameters.lr)
+          data, labels = mock_data(cfg, cfg.experiment.hyperparameters.batch_size, cfg.dataset.input_size)
 
-        # Perform a training step
-        loss.backward()
-        optimizer.step()
+          logits = model(data)
+          loss = criterion(logits, labels)
+          assert loss.item() > 0, "Loss should be positive for random initialization"
 
-        # Verify gradients are non-zero
-        for name, param in model.named_parameters():
-            if param.requires_grad:
-                assert param.grad is not None, "Gradient is None for a parameter"
-                assert torch.any(param.grad != 0), f"Gradient for parameter {name} is zero"
+          # Perform a training step
+          loss.backward()
+          optimizer.step()
 
-    @staticmethod
-    @pytest.mark.skip(reason="This unit test is covered by test_train_integration")
-    def test_logging(mock_wandb):
-        """Test logging functionality."""
-        wandb.log({"loss": 0.5})
-        assert mock_wandb.assert_called # Assertion
+          # Verify gradients are non-zero
+          for name, param in model.named_parameters():
+              if param.requires_grad:
+                  assert param.grad is not None, "Gradient is None for a parameter"
+                  assert torch.any(param.grad != 0), f"Gradient for parameter {name} is zero"
 
     @staticmethod
     def test_device_compatibility(model):
@@ -123,42 +111,42 @@ class TestTraining:
 
     @pytest.mark.slow # this test is slow since it actually calls the train function
     @staticmethod
-    def test_train_integration(mock_wandb, mock_torch_save, mock_hydra_config):
+    def test_train_integration(mocker, mock_hydra_config):
         """Test the train function end-to-end."""
         # Initialize Hydra
-        with initialize(config_path="../configs", version_base="1.1"):
+        with initialize(config_path="../configs/tests", version_base="1.1"):
           # Compose the configuration for the test
-          cfg = compose(config_name="config")
+          cfg = compose(config_name="test")
 
-          # cfg.hydra = {
-          #     "run": {"dir": "./test_outputs"},  # Simulate Hydra's runtime directory
-          #     "job_logging": {"level": "INFO"},  # Optional: Logging configuration
-          # }
-          # # Manually set HydraConfig for the test environment
-          # HydraConfig.instance().set_config(cfg)
-          # HydraConfig.instance().runtime.output_dir = "./test_outputs"
-          # # Mock external dependencies
-          # mock_wandb = mocker.patch("wandb.init", return_value=MagicMock())
-          # mock_wandb_log = mocker.patch("wandb.log")
-          # mock_torch_save = mocker.patch("torch.save")
-          # mock_fig = mocker.patch("matplotlib.pyplot.subplots", return_value=(MagicMock(), [MagicMock(), MagicMock()]))
+          mock_wandb = mocker.patch("wandb.init", return_value=MagicMock())
+          mock_wandb_log = mocker.patch("wandb.log")
+          mock_save = mocker.patch("torch.save", autospec=True)
 
-          # # Call the train function
-          # train(cfg)
+          # TODO have to mock logger add output dir
+          # TODO mock model but resulted in shape mismatch for accuracy
+          #mock_model = mocker.patch('cleaninbox.model.BertTypeClassification.forward', return_value = torch.randn(cfg.experiment.hyperparameters.batch_size, cfg.dataset.num_labels))
 
-          # # Assertions to verify mocks were called
-          # mock_wandb.assert_called_once()
-          # mock_wandb_log.assert_called()
-          # mock_torch_save.assert_called_once()
-          # mock_fig.assert_called_once()
-
-          # Mock external dependencies
-          mock_wandb = mock_wandb()
-          mock_save = mock_torch_save
+          mock_optimizer = mocker.patch('torch.optim.Adam')
+          mock_optimizer_instance = MagicMock()
+          mock_optimizer.return_value = mock_optimizer_instance
+          mock_optimizer_instance.zero_grad = MagicMock()
+          mock_optimizer_instance.step = MagicMock()
+          mock_criterion = mocker.patch('torch.nn.CrossEntropyLoss')
 
           # Call the train function
           train(cfg)
 
           # Verify that logging and wandb calls were made
           assert mock_wandb.assert_called, "wandb.init not called"
+          assert mock_wandb_log.assert_called, "wandb.log not called"
           assert mock_save.assert_called, "torch.save not called"
+          #assert mock_model.called, "Model not called"
+          assert mock_criterion.called, "Criterion not called"
+          assert mock_optimizer.called, "Optimizer not called"
+          assert mock_optimizer_instance.zero_grad.called, "Zero_grad not called"
+          assert mock_optimizer_instance.step.called, "Optimizer step not called"
+
+          # Check if the log file exists
+          log_file_path = f"{mock_hydra_config.runtime.output_dir}/my_logger_hydra.log"
+          assert Path(log_file_path).exists(), "Log file not created"
+
