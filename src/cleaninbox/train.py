@@ -130,33 +130,31 @@ def train(cfg: DictConfig):
         if(environment_cfg.log_wandb==True):
             wandb.log({"train_loss":epoch_loss})
             #make plot sample
-            if(epoch%1 == 0): #plot 4 samples of the training-set and corresponding top-5 distribution 
-                logger.info("Plotting subset of training samples")
-                for k in range(0,5,4):
-                    logits = logits[k:k+4]
-                    labels = labels[k:4]
-                    topk_ = torch.topk(logits,dim=1,k=5)
-                    sentences = model.decode_input_ids(input_ids[k:k+4]) #returns a list of sentences 
-                    top_probs = topk_.values
-                    top_labs = topk_.indices
-                    fig, axes = plt.subplots(1,4,figsize=(16,4))
-                    xticks = [x for x in range(5)]
-                    for j, (ax,probs,top_labs,labs) in enumerate(zip(axes.flat,top_probs,top_labs,labels)):
-                        labs = labs.item()
-                        top_labs = top_labs.detach().numpy()
-                        probs = probs.detach().numpy()
-                        string_labels_xaxis = [string_labels[str(idx)] for idx in top_labs]
-                        # Wrap tick labels for better readability
-                        wrapped_labels = ['\n'.join(textwrap.wrap(label, width=10)) for label in string_labels_xaxis] #nice todo: only split on underscores, but requires more time than i have atm 
-                        wrapped_title = '\n'.join(textwrap.wrap(sentences[j], width=30))
-                        colors = ["tab:orange" if idx==labs else "tab:blue" for idx in top_labs] #plot blue if correct label is present in topk
-                        ax.bar(x=xticks,height=probs,align="center",color=colors)
-                        ax.set_xticks(xticks)
-                        ax.set_xticklabels(wrapped_labels, rotation=45, ha='center')
-                        ax.set_title(wrapped_title)
-                    plt.tight_layout()
-                    wandb.log({"training predictions": wandb.Image(fig)})
-                    
+            if(epoch%5 == 0): #plot 4 samples of the training-set and corresponding top-5 distribution 
+                logits = logits[:4]
+                labels = labels[:4]
+                topk_ = torch.topk(logits,dim=1,k=5)
+                sentences = model.decode_input_ids(input_ids[:4]) #returns a list of sentences 
+                top_probs = topk_.values
+                top_labs = topk_.indices
+                fig, axes = plt.subplots(1,4,figsize=(16,4))
+                xticks = [x for x in range(5)]
+                for j, (ax,probs,top_labs,labs) in enumerate(zip(axes.flat,top_probs,top_labs,labels)):
+                    labs = labs.item()
+                    top_labs = top_labs.detach().numpy()
+                    probs = probs.detach().numpy()
+                    string_labels_xaxis = [string_labels[str(idx)] for idx in top_labs]
+                    # Wrap tick labels for better readability
+                    wrapped_labels = ['\n'.join(textwrap.wrap(label, width=10)) for label in string_labels_xaxis] #nice todo: only split on underscores, but requires more time than i have atm 
+                    wrapped_title = '\n'.join(textwrap.wrap(sentences[j], width=30))
+                    colors = ["tab:orange" if idx==labs else "tab:blue" for idx in top_labs] #plot blue if correct label is present in topk
+                    ax.bar(x=xticks,height=probs,align="center",color=colors)
+                    ax.set_xticks(xticks)
+                    ax.set_xticklabels(wrapped_labels, rotation=45, ha='center')
+                    ax.set_title(wrapped_title)
+                plt.tight_layout()
+                wandb.log({"training predictions": wandb.Image(fig)})
+                
         plt.close()
 
     logger.info("Finished training")
