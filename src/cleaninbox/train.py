@@ -1,9 +1,10 @@
 #import logging before loguru
 import os 
+import textwrap
 
 import torch
 # import typer
-from data import text_dataset
+from data import text_dataset, load_label_strings
 from model import BertTypeClassification
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
@@ -18,7 +19,12 @@ from loguru import logger
 import wandb
 from transformers import AutoModel
 
-#
+"""
+Possible fix for the FutureWarning regarding torch.load: https://github.com/openai/whisper/pull/2451#issuecomment-2516971867
+import functools
+whisper.torch.load = functools.partial(whisper.torch.load, weights_only=True)
+"""
+
 
 
 
@@ -57,7 +63,7 @@ def train(cfg: DictConfig):
     if(environment_cfg.log_wandb==True):
         #load_dotenv()
         #following could be optimized using specific wandb config with entity and project fields.
-        wandb.init(entity="cleaninbox_02476",project="banking77",config=dict(hyperparameters)) #inherits API key from environment by directly passing it when running container
+        wandb.init(entity="cleaninbox_02476",project="banking77",config=dict(hyperparameters)) #inherits API key from environment by directly passing it when running container. Now using vertex injection. Note: other args should in principle also be inherited from config json.
         logger.debug("using wandb")
     #wandb.login(key=os.getenv("WANDB_API_KEY"))
     torch.manual_seed(seed)
@@ -66,7 +72,9 @@ def train(cfg: DictConfig):
 
     model = model.to(DEVICE)
     train_set, _, _ = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, seed) #need to be variable based on cfg 
+    string_labels = load_label_strings(cfg.basic.proc_path,cfg.dataset.name)
     
+
     if num_samples!=-1: #allow to only use a subset. 
         N_SAMPLES = len(train_set)
         num_samples = min(num_samples, N_SAMPLES)
@@ -94,6 +102,10 @@ def train(cfg: DictConfig):
             statistics["train_loss"].append(loss.item())
             accuracy = (logits.argmax(dim=1) == labels).float().mean().item()
             statistics["train_accuracy"].append(accuracy)
+            
+                
+
+                
             #let's plot the first 16 images of the first batch with corresponding predictions
             # if(i==0):
             #     images = images.permute(0,2,3,1).detach().numpy()[:16] #need permute for plt plotting
@@ -117,6 +129,35 @@ def train(cfg: DictConfig):
         statistics["train_loss"].append(epoch_loss)
         if(environment_cfg.log_wandb==True):
             wandb.log({"train_loss":epoch_loss})
+            #make plot sample
+            if(epoch%1 == 0): #plot 4 samples of the training-set and corresponding top-5 distribution 
+                logger.info("Plotting subset of training samples")
+                for k in range(0,5,4):
+                    logits = logits[k:k+4]
+                    labels = labels[k:4]
+                    topk_ = torch.topk(logits,dim=1,k=5)
+                    sentences = model.decode_input_ids(input_ids[k:k+4]) #returns a list of sentences 
+                    top_probs = topk_.values
+                    top_labs = topk_.indices
+                    fig, axes = plt.subplots(1,4,figsize=(16,4))
+                    xticks = [x for x in range(5)]
+                    for j, (ax,probs,top_labs,labs) in enumerate(zip(axes.flat,top_probs,top_labs,labels)):
+                        labs = labs.item()
+                        top_labs = top_labs.detach().numpy()
+                        probs = probs.detach().numpy()
+                        string_labels_xaxis = [string_labels[str(idx)] for idx in top_labs]
+                        # Wrap tick labels for better readability
+                        wrapped_labels = ['\n'.join(textwrap.wrap(label, width=10)) for label in string_labels_xaxis] #nice todo: only split on underscores, but requires more time than i have atm 
+                        wrapped_title = '\n'.join(textwrap.wrap(sentences[j], width=30))
+                        colors = ["tab:orange" if idx==labs else "tab:blue" for idx in top_labs] #plot blue if correct label is present in topk
+                        ax.bar(x=xticks,height=probs,align="center",color=colors)
+                        ax.set_xticks(xticks)
+                        ax.set_xticklabels(wrapped_labels, rotation=45, ha='center')
+                        ax.set_title(wrapped_title)
+                    plt.tight_layout()
+                    wandb.log({"training predictions": wandb.Image(fig)})
+                    
+        plt.close()
 
     logger.info("Finished training")
 
