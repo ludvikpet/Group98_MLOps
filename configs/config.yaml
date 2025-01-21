@@ -23,4 +23,7 @@ basic:
 
 defaults:
     - experiment: overfit
+
+prompt: "Default prompt text"
+
     
