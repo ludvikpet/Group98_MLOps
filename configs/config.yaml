@@ -17,9 +17,16 @@ dataset:
 basic:
   raw_path: "./data/raw/"
   proc_path: "./data/processed/"
-  proc_banking_data: "${proc_path}banking77/"
+  proc_banking_data: "${basic.proc_path}banking77/"
   models: "./models/"
-  model_ckpt: "${models}model.pth"
+  model_ckpt: "${basic.models}model.pth"
+gs:
+  bucket: "gs://banking77/"
+  data: "data/"
+  raw_data: "data/"
+  proc_data: "data/"
+  model: "model/"
+  model_ckpt: "${gs.model}model.pth"
 
 defaults:
     - experiment: overfit

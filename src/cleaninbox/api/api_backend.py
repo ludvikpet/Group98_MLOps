@@ -4,45 +4,61 @@ from contextlib import asynccontextmanager
 import anyio
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from PIL import Image
-from model import BertTypeClassification
 from hydra import initialize, compose
 from typing import Optional, List
-from cleaninbox.data import text_dataset
 import anyio
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
+from google.cloud import storage
+import io
+
+from cleaninbox.data import text_dataset, MyDataset
+# from cleaninbox.evaluate import predict
+from cleaninbox.train import train
+from cleaninbox.model import BertTypeClassification
 
 app = FastAPI()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, text_classes, cfg, DEVICE
+    global model, test_data, text_classes, cfg, DEVICE, storage_client, bucket, model_ckpt, raw_data, proc_data
+
 
     # Initialize Hydra configuration
-    with initialize(config_path="../../configs", version_base="1.1"):
+    with initialize(config_path="../../../configs", version_base="1.1"):
         cfg = compose(config_name="config")
     
+    # Get bucket and relevant blobs:
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(cfg.gs.bucket)
+    raw_data = bucket.get_blob(cfg.gs.raw_data)
+    proc_data_path = bucket.get_blob(cfg.gs.proc_data)
+    model_ckpt = bucket.get_blob(cfg.gs.model_ckpt)
+
     # Fetch model:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = BertTypeClassification(cfg.model.name).to(DEVICE)
-    model.load_state_dict(torch.load(cfg.basic.model_ckpt, map_location=DEVICE))
+    model = BertTypeClassification(cfg.model.name, cfg.dataset.num_labels).to(DEVICE)
+    model.load_state_dict(torch.load(model_ckpt, map_location=DEVICE))
     model.eval()
 
     # Fetch data:
-    _, _, test_data = text_dataset(cfg.basic.proc_banking_data)
-    text_classes = test_data.tensors[3].unique().tolist() # test_data.tensors[3] -> labels tensor
-    
+    _, _, test_data = text_dataset(cfg.dataset.val_size, proc_data_path, cfg.dataset.name, cfg.experiment.hyperparameters.seed)
+    # text_classes = test_data.tensors[3].unique().tolist() # test_data.tensors[3] -> labels tensor
+    text_classes = cfg.dataset.num_labels # test_data.tensors[3] -> labels tensor
 
     try:
         yield
 
     finally:
-        del model, test_data, text_classes, cfg, DEVICE
+        del model, test_data, text_classes, cfg, DEVICE, storage_client, bucket, model_ckpt, raw_data, proc_data
 
 app = FastAPI(lifespan=lifespan)
 
-def predict():
-    test_dataloader = DataLoader(test_data, batch_size = cfg.experiment.overfit.batch_size, shuffle=True)
+def eval(data: TensorDataset):
+
+    test_dataloader = DataLoader(data, batch_size = cfg.experiment.overfit.batch_size, shuffle=True)
 
     correct = 0
     total = 0
@@ -68,36 +84,117 @@ def predict():
 
     # Compute and print accuracy
     accuracy = correct / total
-
+    return correct, total, accuracy
 
 @app.get("/")
 async def root():
     """ Application root """
     return {"message": "Msg from backend"}
 
+@app.post("/readfiletest/")
+async def read_file(file: UploadFile = File(...)):
+    contents = await file.read()
+    return {"filename": file.filename, "contents": contents}
+
+# @app.post("/preprocess/")
+# async def preprocess_data(files: List[UploadFile] = File(...)):
+
+#     try:
+#         file_details = []
+#         for file in files:
+#             content = await file.read()
+#             async with await anyio.open_file(file.filename, "wb") as f:
+#                 f.write(content)
+#             file_details.append(file.filename)
+
+#             dataset = MyDataset() # Change needed: pass list of files instead of path
+#             preprocess()
+
+#     catch Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/download-pretrained-model/")
+def download_pretrained():
+
+    try:
+
+        # Download model checkpoint:
+        file_data = model.download_as_bytes()
+        model_ckpt = io.BytesIO(file_data)
+
+        # Return model checkpoint:
+        return StreamingResponse(model_ckpt,
+                                 media_type="application/octet-stream",
+                                 headers={"Content-Disposition": "attachment; filename={cfg.gs.model_ckpt.split('/')[-1]}"}
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/download-banking-data/")
+def download_banking_data(raw: bool = False):
+    try:
+        # Download raw data:
+        file_data = raw_data.download_as_bytes() if raw else proc_data.download_as_bytes()
+        data = io.BytesIO(file_data)
+
+        # Return raw data:
+        return StreamingResponse(data,
+                                 media_type="application/octet-stream",
+                                 headers={"Content-Disposition": "attachment; filename={cfg.gs.raw_data.split('/')[-1]}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/classify/")
 async def classify_text(file: Optional[UploadFile] = None, text: Optional[str] = None):
-    """ Get model to classify text """
     if not (file or text) or (file and text):
         out_str = "" if (file and text) else "No text specified. "
         return f"{out_str}Must include either raw text- or file input"
     
     try:
-        contents = await file.read() if file else text
+        
         if file:
+            contents = await file.read()
             async with await anyio.open_file(file.filename, "wb") as f:
                 f.write(contents)
+            
+            async with await anyio.open_file(file.filename, "r") as f:
+                samples = f.readlines().split("\n")
+        else:
+            samples = text.split("\n")
         
+        return "Probably worked, but not implemented yet :)"
+        # predictions = predict(samples)
+
+        # output_dir = {f"sample_{i}": {"text": sample, "label": text_classes[pred]} for i, (sample, pred) in enumerate(zip(samples, predictions))}
+        # return output_dir
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/evaluate/")
-async def eval_data(file: Optional[UploadFile] = None):
+@app.post("/evaluate-pretrained/")
+async def eval_data(files: Optional[List[UploadFile]]):
 
     try:
-        contents = await file.read()
+        data = test_data
         
+        # if files and len(files) == 2:
+            
+        #     text = await files[0].read()
+        #     labels = await files[1].read()
 
+        #     async with await anyio.open_file(text.filename, "wb") as f:
+        #         f.write(text)
+        #     async with await anyio.open_file(labels.filename, "wb") as f:
+        #         f.write(labels)
+
+        #     _, _, test = text_dataset(0, )
+
+        correct, total, accuracy = eval(data)
+
+        return {"correct": correct, "total": total, "accuracy": accuracy}
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

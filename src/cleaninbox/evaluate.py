@@ -1,7 +1,7 @@
 import torch
 import typer
-from src.cleaninbox.data import text_dataset
-from src.cleaninbox.model import BertTypeClassification
+from cleaninbox.data import text_dataset
+from cleaninbox.model import BertTypeClassification
 from omegaconf import OmegaConf
 
 # Determine the device for computation (CUDA or CPU)

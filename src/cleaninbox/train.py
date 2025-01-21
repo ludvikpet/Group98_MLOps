@@ -3,8 +3,8 @@ import os
 
 import torch
 # import typer
-from data import text_dataset
-from model import BertTypeClassification
+from cleaninbox.data import text_dataset
+from cleaninbox.model import BertTypeClassification
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 import torch.nn as nn
@@ -45,7 +45,7 @@ def train(cfg: DictConfig):
     model = BertTypeClassification(model_name,num_classes=cfg.dataset.num_labels) #should be read from dataset config
     print(model) 
 
-    #join logger and hydra log
+#join logger and hydra log
     logger.add(os.path.join(hydra_path, "my_logger_hydra.log"))
     logger.info(cfg)
     logger.info("Training day and night")
