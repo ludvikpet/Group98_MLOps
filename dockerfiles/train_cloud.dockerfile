@@ -21,6 +21,7 @@ COPY pyproject.toml pyproject.toml
 
 RUN pip install torch~=2.5.1 -i https://download.pytorch.org/whl/cpu
 RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install google-cloud-storage google-cloud-aiplatform
 RUN pip install . --no-deps --no-cache-dir --verbose
 
 ENTRYPOINT ["python", "-u", "src/cleaninbox/train.py"]
