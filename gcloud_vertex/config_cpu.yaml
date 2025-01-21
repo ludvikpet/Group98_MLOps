@@ -14,5 +14,6 @@ workerPoolSpecs:
           value: cleaninbox
         args:
         - "++environment.log_wandb=True"
+        - "++hyperparameters.epochs=2"
           
         
