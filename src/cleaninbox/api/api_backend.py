@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from google.cloud import storage
 import io
 
+from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
 from cleaninbox.data import text_dataset, MyDataset
 # from cleaninbox.evaluate import predict
 from cleaninbox.train import train
@@ -23,7 +24,7 @@ app = FastAPI()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, text_classes, cfg, DEVICE, storage_client, bucket, model_ckpt, raw_data, proc_data
+    global model, test_data, text_classes, cfg, DEVICE, storage_client, bucket, model_ckpt, raw_data, proc_data, tokenizer
 
 
     # Initialize Hydra configuration
@@ -47,6 +48,8 @@ async def lifespan(app: FastAPI):
     _, _, test_data = text_dataset(cfg.dataset.val_size, proc_data_path, cfg.dataset.name, cfg.experiment.hyperparameters.seed)
     # text_classes = test_data.tensors[3].unique().tolist() # test_data.tensors[3] -> labels tensor
     text_classes = cfg.dataset.num_labels # test_data.tensors[3] -> labels tensor
+
+    tokenizer = BertTokenizer.from_pretrained(cfg.model.name)
 
     try:
         yield
@@ -196,5 +199,49 @@ async def eval_data(files: Optional[List[UploadFile]]):
 
         return {"correct": correct, "total": total, "accuracy": accuracy}
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class PromptRequest(BaseModel):
+    prompt: str
+
+# Prediction endpoint
+@app.post("/predict")
+async def predict(request: PromptRequest):
+    """
+    Predict the label for a given prompt.
+    """
+    try:
+        prompt = request.prompt
+        if not prompt:
+            raise HTTPException(status_code=400, detail="Prompt is empty")
+
+        print(f"Received prompt: {prompt}")
+
+        # Tokenize input
+        encoding = tokenizer(
+            [prompt],
+            padding=True,
+            truncation=True,
+            return_tensors="pt"
+        )
+        input_ids = encoding["input_ids"].to(DEVICE)
+        attention_mask = encoding["attention_mask"].to(DEVICE)
+        token_type_ids = encoding.get("token_type_ids", None)
+        if token_type_ids is not None:
+            token_type_ids = token_type_ids.to(DEVICE)
+
+        # Generate prediction
+        with torch.no_grad():
+            logits = model(input_ids, attention_mask, token_type_ids)
+            predicted_label = torch.argmax(logits, dim=1).item()
+            class_name = label_map[predicted_label]
+
+        return {
+            "prompt": prompt,
+            "predicted_label": predicted_label,
+            "class_name": class_name
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
