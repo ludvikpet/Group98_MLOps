@@ -6,6 +6,7 @@ import torch
 # import typer
 from cleaninbox.data import text_dataset, load_label_strings
 from cleaninbox.model import BertTypeClassification
+from google.cloud import storage 
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 import torch.nn as nn
@@ -25,6 +26,11 @@ import functools
 whisper.torch.load = functools.partial(whisper.torch.load, weights_only=True)
 """
 
+def save_model_to_bucket(input_path, output_path) -> None:
+    client = storage.Client()
+    bucket = client.bucket("banking77")
+    blob = bucket.blob(output_path)
+    blob.upload_from_filename(input_path)
 
 
 
@@ -33,6 +39,7 @@ def train(cfg: DictConfig):
     """Train a model on banking77."""
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
+        cloud_model_path = ("/models/model.pth") #used to register trained model outside of docker container
         cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
         cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
     
@@ -103,26 +110,6 @@ def train(cfg: DictConfig):
             accuracy = (logits.argmax(dim=1) == labels).float().mean().item()
             statistics["train_accuracy"].append(accuracy)
             
-                
-
-                
-            #let's plot the first 16 images of the first batch with corresponding predictions
-            # if(i==0):
-            #     images = images.permute(0,2,3,1).detach().numpy()[:16] #need permute for plt plotting
-            #     labels = labels.detach().numpy()[:16]
-            #     predicted_classes = torch.argmax(logits,dim=1).detach().numpy()[:16]
-            #     fig, axes = plt.subplots(4,4)
-            #     for j, ax in enumerate(axes.flat):
-            #         ax.imshow(images[j])
-            #         ax.set_axis_off()
-            #         ax.text(3,5, f"{predicted_classes[j]}",color="red",fontweight="bold")
-            #     plt.tight_layout(pad=0.0,w_pad=0.0,h_pad=0.0)
-            #     fig.suptitle(f"epoch {epoch}",fontweight="bold")
-            #     wandb.log({"training predictions": wandb.Image(fig)})
-            #     plt.close()
-            #     # add a plot of histogram of the gradients
-            #     grads = torch.cat([p.grad.flatten() for p in model.parameters() if p.grad is not None], 0)
-            #     wandb.log({"gradients": wandb.Histogram(grads)})
 
         epoch_loss = running_loss.item() / N_SAMPLES
         logger.info(f"Epoch {epoch}: {epoch_loss}")
@@ -162,6 +149,9 @@ def train(cfg: DictConfig):
     if cfg.model.save_model:
         torch.save(model.state_dict(), f"{os.getcwd()}/model.pth") #save to hydra output (hopefully using chdir true)
         logger.info(f"Saved model to: f{os.getcwd()}/model.pth")
+        if environment_cfg.run_in_cloud==True:
+            save_model_to_bucket(input_path=f"{os.getcwd()}/model.pth",output_path=cloud_model_path)
+            logger.info(f"Saved model to cloud: {cloud_model_path}")
     
     if(environment_cfg.log_wandb==True):
         artifact = wandb.Artifact(name="model",type="model")
