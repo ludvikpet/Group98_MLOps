@@ -61,7 +61,7 @@ class TestTraining:
 
     @pytest.mark.slow # this test is slow since it actually calls the train function
     @staticmethod
-    def test_train_function(mocker):
+    def test_training(mocker):
         """Test the train function end-to-end."""
         # Create a mock HydraConfig object
         mock_runtime = MagicMock()
