@@ -98,11 +98,10 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 - Ludvik atm building API for online inference, I believe 
 
 
-# Todo
+# Currently working on (tuesday Jan 21st)
 - [ ] API færdig (Ludvik)
 - [ ] Inferens (Troels) + integrer med GCP Run og API
 - [ ] Covergage + Continuous integration & workflow on data and models
-- [ ] 
 
 # Checklist
 
