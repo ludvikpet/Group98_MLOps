@@ -102,7 +102,7 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 
 ### Week 1
 
-* [x] Create a git repository (M5)
+* :x: Create a git repository (M5)
 * [x] Make sure that all team members have write access to the GitHub repository (M5)
 * [x] Create a dedicated environment for you project to keep track of your packages (M2)
 * [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
