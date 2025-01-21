@@ -3,9 +3,38 @@ import typer
 from cleaninbox.data import text_dataset
 from cleaninbox.model import BertTypeClassification
 from omegaconf import OmegaConf
+from torch.utils.data import DataLoader
 
 # Determine the device for computation (CUDA or CPU)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def eval(test_dataloader: DataLoader, model: BertTypeClassification, DEVICE: torch.device) -> None:
+    # Initialize counters for accuracy computation
+    correct = 0
+    total = 0
+
+    # Disable gradient calculations for evaluation
+    with torch.no_grad():
+        for input_ids, token_type_ids, attention_mask, labels in test_dataloader:
+            # Move inputs and labels to the computation device
+            input_ids = input_ids.to(DEVICE)
+            token_type_ids = token_type_ids.to(DEVICE)
+            attention_mask = attention_mask.to(DEVICE)
+            labels = labels.to(DEVICE)
+
+            # Forward pass to compute logits
+            logits = model(input_ids, attention_mask, token_type_ids)
+
+            # Predicted labels are the indices of the maximum logit
+            predictions = torch.argmax(logits, dim=1)
+
+            # Update the counters
+            correct += (predictions == labels).sum().item()
+            total += labels.size(0)
+
+    # Compute and print accuracy
+    accuracy = correct / total
+    return correct, total, accuracy
 
 def evaluate(model_checkpoint: str, config_path: str) -> None:
     """
@@ -41,28 +70,5 @@ def evaluate(model_checkpoint: str, config_path: str) -> None:
     # Switch model to evaluation mode
     model.eval()
 
-    # Initialize counters for accuracy computation
-    correct = 0
-    total = 0
-
-    # Disable gradient calculations for evaluation
-    with torch.no_grad():
-        for input_ids, token_type_ids, attention_mask, labels in test_dataloader:
-            # Move inputs and labels to the computation device
-            input_ids = input_ids.to(DEVICE)
-            token_type_ids = token_type_ids.to(DEVICE)
-            attention_mask = attention_mask.to(DEVICE)
-            labels = labels.to(DEVICE)
-
-            # Forward pass to compute logits
-            logits = model(input_ids, attention_mask, token_type_ids)
-
-            # Predicted labels are the indices of the maximum logit
-            predictions = torch.argmax(logits, dim=1)
-
-            # Update the counters
-            correct += (predictions == labels).sum().item()
-            total += labels.size(0)
-
-    # Compute and print accuracy
-    accuracy = correct / total
+    return eval(test_dataloader, model, DEVICE)
+    
