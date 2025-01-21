@@ -1,0 +1,16 @@
+
+# Backend libraries for API server:
+uvicorn==0.34.0
+fastapi==0.115.6
+python-multipart==0.0.20
+
+# Model relevant libraries:
+torch==2.5.1
+transformers==4.47.1
+
+# Logging and configuration libraries:
+hydra-core==1.3.2
+omegaconf==2.3.0
+
+# Plotting libraries:
+matplotlib==3.10.0

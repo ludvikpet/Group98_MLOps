@@ -1,4 +1,5 @@
 # Group98_MLOps
+Now an org!
 
 *Adam Ledou, s204216*  <br>
 *Ludvik Petersen, s194613*  <br>
@@ -96,15 +97,75 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 
 - Ludvik atm building API for online inference, I believe 
 
-# To do friday
-- Let us please clean up .gitignore, it looks pretty bad, don't know if it behaves as supposed - this could possibly mitigate the need of .gcloudignore for building docker
-- invitations to bucket 
-- (finish?) API
-- Ensure model is fully deployable in cloud using vertex 
-- Add wandb secrets to gcloud 
-- Do a hyperparameter sweep on full trainset 
-- Log samples during training with plot of input sentence and top-5 prediction class distributions. Losses seem too low. 
-- Build script for inference only
-- Add unittest for train.py 
 
+# Currently working on (tuesday Jan 21st)
+- [ ] API færdig (Ludvik)
+- [ ] Inferens (Troels) + integrer med GCP Run og API
+- [ ] Covergage + Continuous integration & workflow on data and models
 
+# Checklist
+
+### Week 1
+
+* :white_check_mark: Create a git repository (M5)
+* :white_check_mark: Make sure that all team members have write access to the GitHub repository (M5)
+* :white_check_mark: Create a dedicated environment for you project to keep track of your packages (M2)
+* :white_check_mark: Create the initial file structure using cookiecutter with an appropriate template (M6)
+* :white_check_mark: Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
+* :white_check_mark: Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
+* :x: Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
+    are using (M2+M6)
+* :x: Remember to comply with good coding practices (`pep8`) while doing the project (M7)
+* :x: Do a bit of code typing and remember to document essential parts of your code (M7)
+* :white_check_mark: Setup version control for your data or part of your data (M8)
+* :white_check_mark: Add command line interfaces and project commands to your code where it makes sense (M9)
+* :white_check_mark: Construct one or multiple docker files for your code (M10)
+* :white_check_mark: Build the docker files locally and make sure they work as intended (M10)
+* :white_check_mark: Write one or multiple configurations files for your experiments (M11)
+* :white_check_mark: Used Hydra to load the configurations and manage your hyperparameters (M11)
+* :x: Use profiling to optimize your code (M12)
+* :white_check_mark: Use logging to log important events in your code (M14)
+* :white_check_mark: Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
+* :x: Consider running a hyperparameter optimization sweep (M14)
+* :x: Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
+
+### Week 2
+
+* :white_check_mark: Write unit tests related to the data part of your code (M16)
+* :white_check_mark: Write unit tests related to model construction and or model training (M16)
+* :x: Calculate the code coverage (M16)
+* :white_check_mark: Get some continuous integration running on the GitHub repository (M17)
+* :white_check_mark: Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
+* :x: Add a linting step to your continuous integration (M17)
+* :x: Add pre-commit hooks to your version control setup (M18)
+* :x: Add a continuous workflow that triggers when data changes (M19)
+* :x: Add a continuous workflow that triggers when changes to the model registry is made (M19)
+* :white_check_mark: Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
+* :white_check_mark: Create a trigger workflow for automatically building your docker images (M21)
+* :white_check_mark: Get your model training in GCP using either the Engine or Vertex AI (M21)
+* :x: Create a FastAPI application that can do inference using your model (M22)
+* :x: Deploy your model in GCP using either Functions or Run as the backend (M23)
+* :x: Write API tests for your application and setup continuous integration for these (M24)
+* :x: Load test your application (M24)
+* :x: Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
+* :x: Create a frontend for your API (M26)
+
+### Week 3
+
+* :x: Check how robust your model is towards data drifting (M27)
+* :x: Deploy to the cloud a drift detection API (M27)
+* :x: Instrument your API with a couple of system metrics (M28)
+* :x: Setup cloud monitoring of your instrumented application (M28)
+* :x: Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+* :x: If applicable, optimize the performance of your data loading using distributed data loading (M29)
+* :x: If applicable, optimize the performance of your training pipeline by using distributed training (M30)
+* :x: Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
+
+### Extra
+
+* :x: Write some documentation for your application (M32)
+* :x: Publish the documentation to GitHub Pages (M32)
+* :x: Revisit your initial project description. Did the project turn out as you wanted?
+* :x: Create an architectural diagram over your MLOps pipeline
+* :x: Make sure all group members have an understanding about all parts of the project
+* :x: Uploaded all your code to GitHub

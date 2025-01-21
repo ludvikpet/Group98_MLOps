@@ -1,18 +1,19 @@
 #force include 
 !dockerfiles/*
 !cloudbuild.yaml
+!gcloud_vertex/
 
+#directories
 outputs/
 wandb/
 docs/site/
+models/*
+reports/*
+data/
+
 
 # test cache
 manual_test/
-
-# data folder:
-data/raw/
-data/processed/
-data/*
 
 .env 
 data/*
@@ -192,16 +193,3 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Models folder:
-models/
-
-
-wandb/
-docs/site/
-outputs/
-reports/
-models/
-data/raw/
-data/processed/
-tests/outputs/
-tests/output/
