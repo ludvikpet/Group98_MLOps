@@ -6,7 +6,7 @@ import torch
 # import typer
 from cleaninbox.data import text_dataset, load_label_strings
 from cleaninbox.model import BertTypeClassification
-from google.cloud import storage 
+from google.cloud import storage, aiplatform
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 import torch.nn as nn
@@ -39,7 +39,7 @@ def train(cfg: DictConfig):
     """Train a model on banking77."""
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
-        cloud_model_path = ("/models/model.pth") #used to register trained model outside of docker container
+        cloud_model_path = "/models/model.pth" #used to register trained model outside of docker container
         cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
         cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
     
@@ -152,6 +152,14 @@ def train(cfg: DictConfig):
         if environment_cfg.run_in_cloud==True:
             save_model_to_bucket(input_path=f"{os.getcwd()}/model.pth",output_path=cloud_model_path)
             logger.info(f"Saved model to cloud: {cloud_model_path}")
+            #register model to vertex model registry 
+            aiplatform.init(project="cleaninbox-448011", location="europe-west1")
+            model = aiplatform.Model.upload(
+                display_name="banking77-classifier",
+                artifact_uri=f"gs://banking77{cloud_model_path}",
+                serving_container_image_uri=None,  # No inference container for now
+            )
+
     
     if(environment_cfg.log_wandb==True):
         artifact = wandb.Artifact(name="model",type="model")
