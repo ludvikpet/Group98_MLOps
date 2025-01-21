@@ -3,13 +3,9 @@ import pytest
 import omegaconf
 from unittest.mock import MagicMock
 import torch
-import hydra
 from hydra import compose, initialize
 from hydra.core.hydra_config import HydraConfig
 from torch.optim import Adam
-from loguru import logger
-from transformers import AutoModel
-import wandb
 from cleaninbox.model import BertTypeClassification
 from cleaninbox.train import train
 from tests import _PROJECT_ROOT, _VOCAB_SIZE, _TEST_ROOT
@@ -35,36 +31,11 @@ def mock_data():
         return data, labels
     return _generate
 
-@pytest.fixture
-def mock_hydra_config(mocker):
-    """Mock HydraConfig.get to simulate runtime configuration."""
-    # Create a mock HydraConfig object
-    mock_runtime = MagicMock()
-    mock_runtime.output_dir = "./test_outputs"  # Simulate runtime output directory
-
-    mock_hydra_config = MagicMock()
-    mock_hydra_config.runtime = mock_runtime
-
-    # Mock HydraConfig.get to return the mocked config
-    mocker.patch("hydra.core.hydra_config.HydraConfig.get", return_value=mock_hydra_config)
-
 class TestTraining:
-    """Unit tests for training.
-
-    The functions:
-    - test_loss_functionality,
-    - test_logging,
-    - test_device_compatibility,
-    - test_checkpoint_saving
-    test individual components of the training function but do not integrate train.py
-
-    The function:
-    - test_train_integration
-    tests the entire training pipeline
-    """
+    """Unit tests for training the model."""
 
     @staticmethod
-    def test_parameter_updates(config, model, mock_data, mock_hydra_config):
+    def test_parameter_updates(model, mock_data):
         """Test that the loss function behaves as expected."""
         with initialize(config_path="../configs/tests", version_base="1.1"):
           # Compose the configuration for the test
@@ -88,65 +59,66 @@ class TestTraining:
                   assert param.grad is not None, "Gradient is None for a parameter"
                   assert torch.any(param.grad != 0), f"Gradient for parameter {name} is zero"
 
-    @staticmethod
-    def test_device_compatibility(model):
-        """Test that model and data move to the correct device."""
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
-
-        for param in model.parameters():
-            assert param.device == device, f"Model parameter not on device {device}"
-
-    @staticmethod
-    @pytest.mark.skip(reason="This unit test is covered by test_train_integration")
-    def test_checkpoint_saving(model, mock_torch_save):
-      """Test that model checkpoints are saved correctly using mocker."""
-      # mock temporary checkpoint path
-      checkpoint_path = _TEST_ROOT / "tmp" / "checkpoint.pth"
-      mock_save = mock_torch_save()
-      # Call the save function
-      torch.save(model.state_dict(), checkpoint_path)
-      # Assert the save function was called with the correct arguments
-      mock_save.assert_called_once_with(model.state_dict(), checkpoint_path)
-
     @pytest.mark.slow # this test is slow since it actually calls the train function
     @staticmethod
-    def test_train_integration(mocker, mock_hydra_config):
+    def test_train_function(mocker):
         """Test the train function end-to-end."""
+        # Create a mock HydraConfig object
+        mock_runtime = MagicMock()
+        mock_runtime.output_dir = "./test_outputs"  # Simulate runtime output directory
+
+        mock_hydra_config = MagicMock()
+        mock_hydra_config.runtime = mock_runtime
+
+        # Mock HydraConfig.get to return the mocked config
+        mocker.patch("hydra.core.hydra_config.HydraConfig.get", return_value=mock_hydra_config)
+
         # Initialize Hydra
         with initialize(config_path="../configs/tests", version_base="1.1"):
-          # Compose the configuration for the test
-          cfg = compose(config_name="test")
+            # Compose the configuration for the test
+            cfg = compose(config_name="test")
 
-          mock_wandb = mocker.patch("wandb.init", return_value=MagicMock())
-          mock_wandb_log = mocker.patch("wandb.log")
-          mock_save = mocker.patch("torch.save", autospec=True)
+            # Mock wandb and torch.save:
+            mock_wandb = mocker.patch("wandb.init", return_value=MagicMock())
+            mock_wandb_log = mocker.patch("wandb.log")
+            mock_save = mocker.patch("torch.save", autospec=True)
 
-          # TODO have to mock logger add output dir
-          # TODO mock model but resulted in shape mismatch for accuracy
-          #mock_model = mocker.patch('cleaninbox.model.BertTypeClassification.forward', return_value = torch.randn(cfg.experiment.hyperparameters.batch_size, cfg.dataset.num_labels))
+            # Mock optimizer and criterion
+            mock_optimizer = mocker.patch('cleaninbox.train.Adam')
+            mock_optimizer_instance = MagicMock()
+            mock_optimizer.return_value = mock_optimizer_instance
+            mock_optimizer_instance.zero_grad = MagicMock()
+            mock_optimizer_instance.step = MagicMock()
+            mock_criterion = mocker.patch('torch.nn.CrossEntropyLoss')
 
-          mock_optimizer = mocker.patch('torch.optim.Adam')
-          mock_optimizer_instance = MagicMock()
-          mock_optimizer.return_value = mock_optimizer_instance
-          mock_optimizer_instance.zero_grad = MagicMock()
-          mock_optimizer_instance.step = MagicMock()
-          mock_criterion = mocker.patch('torch.nn.CrossEntropyLoss')
+            # Mock the logger
+            mock_logger_add = mocker.patch("loguru.logger.add", return_value=MagicMock())
+            mock_logger_info = mocker.patch("loguru.logger.info")
+            mock_logger_debug = mocker.patch("loguru.logger.debug")
 
-          # Call the train function
-          train(cfg)
+            # Mock the training statistics figure
+            mock_fig = mocker.patch('matplotlib.pyplot.subplots', return_value = (MagicMock(), [MagicMock(), MagicMock()]))
 
-          # Verify that logging and wandb calls were made
-          assert mock_wandb.assert_called, "wandb.init not called"
-          assert mock_wandb_log.assert_called, "wandb.log not called"
-          assert mock_save.assert_called, "torch.save not called"
-          #assert mock_model.called, "Model not called"
-          assert mock_criterion.called, "Criterion not called"
-          assert mock_optimizer.called, "Optimizer not called"
-          assert mock_optimizer_instance.zero_grad.called, "Zero_grad not called"
-          assert mock_optimizer_instance.step.called, "Optimizer step not called"
+            # Call the train function
+            train(cfg)
 
-          # Check if the log file exists
-          log_file_path = f"{mock_hydra_config.runtime.output_dir}/my_logger_hydra.log"
-          assert Path(log_file_path).exists(), "Log file not created"
+            # Verify that logging and wandb calls were made
+            assert mock_wandb.assert_called, "wandb.init not called"
+            assert mock_wandb_log.assert_called, "wandb.log not called"
+            assert mock_save.assert_called, "torch.save not called"
+            #assert mock_model.called, "Model not called"
+            assert mock_criterion.called, "Criterion not called"
+            assert mock_optimizer.called, "Optimizer not called"
+            assert mock_optimizer_instance.zero_grad.called, "Zero_grad not called"
+            assert mock_optimizer_instance.step.called, "Optimizer step not called"
+
+            assert mock_logger_add.called, "Logger add not called"
+            assert mock_logger_info.called, "Logger info not called"
+            assert mock_logger_debug.called, "Logger debug not called"
+
+            assert mock_fig.called_once(), "Matplotlib figure not created"
+
+            # Check if the log file exists
+            log_file_path = f"{mock_hydra_config.runtime.output_dir}/my_logger_hydra.log"
+            assert not(Path(log_file_path).exists()), "Log file created. Mock the logger properly."
 

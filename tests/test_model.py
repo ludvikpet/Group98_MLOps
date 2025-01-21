@@ -45,25 +45,10 @@ class TestModel:
         logits = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         assert logits.shape == (batch_size, config.dataset.num_labels), "Incorrect output shape. Expected (batch_size, num_labels)"
 
-    @pytest.mark.skip(reason = "This test is being carried out in test_train.py") # TODO probably delete this test, since we test for it in test_train
-    def test_model_parameter_updates(self, model, mock_data, config):
-        """Test that the model parameters are updated during training"""
-        # Instantiate the optimizer with Hydra's 'intsantiate' function
-        optimizer = Adam(model.parameters(), lr=config.experiment.hyperparameters.lr)
+    def test_device_compatibility(self, model):
+        """Test that model can be moved to device."""
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
 
-        # Generate mock data and random labels
-        input_ids, token_type_ids, attention_mask = mock_data(config.experiment.hyperparameters.batch_size)
-        labels = torch.randint(0, config.dataset.num_labels, (config.experiment.hyperparameters.batch_size,), dtype=torch.long)
-
-        # Training steps
-        model.train()
-        logits = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-        loss = torch.nn.functional.cross_entropy(logits, labels)
-        loss.backward()
-        optimizer.step()
-
-        # Assert that the gradient is not zero for trainable parameters
-        for name, param in model.named_parameters():
-            if param.requires_grad:
-                assert param.grad is not None, f"Gradient for parameter {name} is None"
-                assert torch.any(param.grad != 0), f"Gradient for parameter {name} is zero"
+        for param in model.parameters():
+            assert param.device == device, f"Model parameter not on device {device}"
