@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-    
 COPY src/cleaninbox/api src/
 COPY requirements_backend.txt requirements.txt
 COPY pyproject.toml pyproject.toml
