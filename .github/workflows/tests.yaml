@@ -44,7 +44,7 @@ jobs:
           echo "${{ secrets.GOOGLE_AUTH_DATA }}" | head -c 50
 
       # Use google auth key
-      - uses: 'google-github-actions/auth@v2'
+      - uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: ${{ secrets.GOOGLE_AUTH_DATA }}
 
