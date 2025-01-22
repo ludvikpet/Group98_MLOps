@@ -34,12 +34,6 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
         run: |
           echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
-
-      # Test the GCS athentication
-      - name: Verify GCS Authentication 
-        run: |
-          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-          gcloud storage buckets list
         
       # Install dependencies
       - name: Install dependencies
