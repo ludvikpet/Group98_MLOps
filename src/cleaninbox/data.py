@@ -8,16 +8,16 @@ import datasets
 from loguru import logger
 from transformers import BertTokenizer
 import torch
-from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
+from hydra.utils import to_absolute_path
 import hydra
-from omegaconf import DictConfig, OmegaConf
-from loguru import logger
+from omegaconf import DictConfig
 import sys
 from torch.utils.data import random_split
 from google.cloud.storage import Bucket
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
+logger.add("logs/preprocessing.log", level="INFO", format="{message} | {level} | {time:YYYY-MM-DD HH:mm:ss}")
 
 class MyDataset(Dataset):
     """My custom dataset."""
@@ -28,10 +28,10 @@ class MyDataset(Dataset):
         self.proc_dir = Path(to_absolute_path(proc_dir)) / Path(self.data_path).stem
         logger.info(f"Raw data path: {self.raw_dir}")
 
-    def __len__(self): #Could also be empty
+    def __len__(self):  # Could also be empty
         return len(self.train_text) if hasattr(self, "train_text") else 0
 
-    def __getitem__(self, index): #Could also be empty
+    def __getitem__(self, index):  # Could also be empty
         return {
             "input_ids": self.train_text[index],
             "labels": self.train_labels[index]
@@ -40,26 +40,26 @@ class MyDataset(Dataset):
     @logger.catch(level="ERROR")
     def download_data(self, dset_name: str) -> datasets.dataset_dict.DatasetDict:
         logger.info(f"Collecting and unpacking dataset {dset_name}.")
-        dataset = load_dataset(dset_name,trust_remote_code=True)
+        dataset = load_dataset(dset_name, trust_remote_code=True)
+        assert "train" in dataset and "test" in dataset, "Dataset must contain 'train' and 'test' splits!"
+        assert len(dataset["train"]) > 0, "Training dataset is empty!"
+        assert len(dataset["test"]) > 0, "Test dataset is empty!"
         return dataset
 
     @logger.catch(level="ERROR")
     def preprocess(self, model_name: str) -> None:
-
-        # Load data:
         dataset = self.download_data(self.data_path)
         train_text_l, train_labels_l = dataset["train"]["text"], dataset["train"]["label"]
         test_text_l, test_labels_l = dataset["test"]["text"], dataset["test"]["label"]
 
-        #tokenize data:
+        logger.info(f"Starting tokenization with model: {model_name}")
         tokenizer = BertTokenizer.from_pretrained(model_name)
-        train_text = tokenize_data(train_text_l,tokenizer) # N x maxSeqLen
-        test_text = tokenize_data(test_text_l,tokenizer) # N x maxSeqLen
+        train_text = self.tokenize_data(train_text_l, tokenizer)
+        test_text = self.tokenize_data(test_text_l, tokenizer)
 
         train_labels = torch.tensor(train_labels_l).long()
         test_labels = torch.tensor(test_labels_l).long()
 
-        # Save processed data:
         logger.info(f"Saving processed data to {self.proc_dir}.")
         self.proc_dir.mkdir(parents=True, exist_ok=True)
         torch.save(train_text, self.proc_dir / "train_text.pt")
@@ -67,38 +67,30 @@ class MyDataset(Dataset):
         torch.save(test_text, self.proc_dir / "test_text.pt")
         torch.save(test_labels, self.proc_dir / "test_labels.pt")
 
-        #save a dictionary of label-to-string class mapping
-        labelDict = {0: "activate_my_card",1: "age_limit",2: "apple_pay_or_google_pay",3: "atm_support",4: "automatic_top_up",5: "balance_not_updated_after_bank_transfer",6: "balance_not_updated_after_cheque_or_cash_deposit",7: "beneficiary_not_allowed",8: "cancel_transfer",9: "card_about_to_expire",10: "card_acceptance",11: "card_arrival",12: "card_delivery_estimate",13: "card_linking",14: "card_not_working",15: "card_payment_fee_charged",16: "card_payment_not_recognised",17: "card_payment_wrong_exchange_rate",18: "card_swallowed",19: "cash_withdrawal_charge",20: "cash_withdrawal_not_recognised",21: "change_pin",22: "compromised_card",23: "contactless_not_working",24: "country_support",25: "declined_card_payment",26: "declined_cash_withdrawal",27: "declined_transfer",28: "direct_debit_payment_not_recognised",29: "disposable_card_limits",30: "edit_personal_details",31: "exchange_charge",32: "exchange_rate",33: "exchange_via_app",34: "extra_charge_on_statement",35: "failed_transfer",36: "fiat_currency_support",37: "get_disposable_virtual_card",38: "get_physical_card",39: "getting_spare_card",40: "getting_virtual_card",41: "lost_or_stolen_card",42: "lost_or_stolen_phone",43: "order_physical_card",44: "passcode_forgotten",45: "pending_card_payment",46: "pending_cash_withdrawal",47: "pending_top_up",48: "pending_transfer",49: "pin_blocked",50: "receiving_money",51: "Refund_not_showing_up",52: "request_refund",53: "reverted_card_payment",54: "supported_cards_and_currencies",55: "terminate_account",56: "top_up_by_bank_transfer_charge",57: "top_up_by_card_charge",58: "top_up_by_cash_or_cheque",59: "top_up_failed",60: "top_up_limits",61: "top_up_reverted",62: "topping_up_by_card",63: "transaction_charged_twice",64: "transfer_fee_charged",65: "transfer_into_account",66: "transfer_not_received_by_recipient",67: "transfer_timing",68: "unable_to_verify_identity",69: "verify_my_identity",70: "verify_source_of_funds",71: "verify_top_up",72: "virtual_card_not_working",73: "visa_or_mastercard",74: "why_verify_identity",75: "wrong_amount_of_cash_received",
-                    76: "wrong_exchange_rate_for_cash_withdrawal"}
-        with open(self.proc_dir / "label_strings.json","w") as f:
-            json.dump(labelDict,f)
+        label_dict = {i: label for i, label in enumerate(dataset["train"].features["label"].names)}
+        with open(self.proc_dir / "label_strings.json", "w") as f:
+            json.dump(label_dict, f)
 
-        # Save raw data:
         logger.info(f"Saving raw data to {self.raw_dir}.")
         self.raw_dir.mkdir(parents=True, exist_ok=True)
-        with open(self.raw_dir / "train_text.json", 'w') as f:
-            json.dump(train_text_l,f)
+        with open(self.raw_dir / "train_text.json", "w") as f:
+            json.dump(train_text_l, f)
+        with open(self.raw_dir / "train_labels.json", "w") as f:
+            json.dump(train_labels_l, f)
+        with open(self.raw_dir / "test_text.json", "w") as f:
+            json.dump(test_text_l, f)
+        with open(self.raw_dir / "test_labels.json", "w") as f:
+            json.dump(test_labels_l, f)
 
-        with open(self.raw_dir / "train_labels.json", 'w') as f:
-            json.dump(train_labels_l,f)
-
-        with open(self.raw_dir / "test_text.json", 'w') as f:
-            json.dump(test_text_l,f)
-
-        with open(self.raw_dir / "test_labels.json", 'w') as f:
-            json.dump(test_labels_l,f)
-
-
-def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
-        """ Tokenize the input text data. """
-        encoding = tokenizer(text,# List of input texts
-        padding=True,              # Pad to the maximum sequence length
-        truncation=False,           # Truncate to the maximum sequence length if necessary
-        return_tensors='pt',      # Return PyTorch tensors
-        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
+    def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
+        encoding = tokenizer(
+            text,
+            padding=True,
+            truncation=True,
+            return_tensors='pt',
+            add_special_tokens=True
         )
         return encoding
-
 def load_label_strings(proc_path, dataset_name) -> dict[int,str]:
     """
     Loads the integer class-label corresponding string labels for visualizations during training
