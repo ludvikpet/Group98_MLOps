@@ -1,15 +1,23 @@
-datasets==3.2.0
-hydra-core==1.3.2
-invoke==2.2.0
-loguru==0.7.3
+# General:
 matplotlib==3.10.0
-omegaconf==2.3.0
-pytest==8.3.4
-pytest-mock==3.14.0
-python-dotenv==1.0.1
 #torch==2.5.1+cu118 excluded for now - directly installed in docker so that we can debug with no cuda (faster build)
-transformers==4.47.1
-typer==0.15.1
+loguru==0.7.3
 wandb==0.19.2
+
+# CLI:
+invoke==2.2.0
+typer==0.15.1
+hydra-core==1.3.2
+omegaconf==2.3.0
+
+# DVC:
 dvc==3.59.0
 dvc-gs==3.0.1
+
+# Hugging Face:
+transformers==4.47.1
+datasets==3.2.0
+
+# Pydantic:
+pydantic==2.10.5
+pydantic_core==2.27.2

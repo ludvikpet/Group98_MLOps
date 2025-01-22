@@ -26,8 +26,14 @@ gs:
   data: "data/"
   raw_data: "${gs.data}raw/banking77/"
   proc_data: "${gs.data}processed/banking77/"
-  models: "$models/"
-  model_ckpt: "${gs.models}model_current.pth"
+  model: "models"
+  model_ckpt: "${gs.model}/model_current.pth"
+  
+environment:
+  log_wandb: True
+  run_in_cloud: True
+  models: "models/"
+  model_ckpt: "${gs.model}/model_current.pth"
 
 mount_gs:
   bucket: "/gcs/${bucket}/"
@@ -37,11 +43,6 @@ mount_gs:
   models: "${mount_gs.bucket}models/"
   model_ckpt: "${mount_gs.models}model_current.pth"
 
-
-environment:
-  log_wandb: True
-  run_in_cloud: True
-  model_ckpt: "${basic.models.model_ckpt}"
 
 defaults:
     - experiment: overfit
