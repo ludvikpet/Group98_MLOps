@@ -10,6 +10,9 @@ on:
 
 jobs:
   test:
+    permissions:
+     contents: 'read'
+     id-token: 'write'
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
@@ -27,14 +30,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
           cache-dependency-path: setup.py
-
-      # Authenticate with GCS
-      - name: Authenticate with GCS
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
-        run: |
-          echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
-
+        
       # Install dependencies
       - name: Install dependencies
         run: |
@@ -42,12 +38,25 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_test.txt
           pip install -e .
+          pip install google-cloud-storage google-cloud-aiplatform torch
           pip list
+
+      # debug secrets
+      - name: Debug Secrets
+        run: |
+          echo "${{ secrets.GOOGLE_AUTH_DATA }}" | head -c 50
+
+      # Authenticate using workload identity pools
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'cleaninbox-448011'
+          workload_identity_provider: projects/170780472924/locations/global/workloadIdentityPools/github/providers/my-repo
+          service_account: 'dvc-ci@cleaninbox-448011.iam.gserviceaccount.com'
 
       # Download data
       - name: Pull data with DVC
         run: |
-          dvc pull
+          dvc pull data
 
       # Run tests
       - name: Run tests & coverage
