@@ -141,32 +141,32 @@ def download_banking_data(raw: bool = False):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/classify/")
-async def classify_text(file: Optional[UploadFile] = None, text: Optional[str] = None):
-    if not (file or text) or (file and text):
-        out_str = "" if (file and text) else "No text specified. "
-        return f"{out_str}Must include either raw text- or file input"
+# @app.post("/classify/")
+# async def classify_text(file: Optional[UploadFile] = None, text: Optional[str] = None):
+#     if not (file or text) or (file and text):
+#         out_str = "" if (file and text) else "No text specified. "
+#         return f"{out_str}Must include either raw text- or file input"
     
-    try:
+#     try:
         
-        if file:
-            contents = await file.read()
-            async with await anyio.open_file(file.filename, "wb") as f:
-                f.write(contents)
+#         if file:
+#             contents = await file.read()
+#             async with await anyio.open_file(file.filename, "wb") as f:
+#                 f.write(contents)
             
-            async with await anyio.open_file(file.filename, "r") as f:
-                samples = f.readlines().split("\n")
-        else:
-            samples = text.split("\n")
+#             async with await anyio.open_file(file.filename, "r") as f:
+#                 samples = f.readlines().split("\n")
+#         else:
+#             samples = text.split("\n")
         
-        return "Probably worked, but not implemented yet :)"
-        # predictions = predict(samples)
+#         return "Probably worked, but not implemented yet :)"
+#         # predictions = predict(samples)
 
-        # output_dir = {f"sample_{i}": {"text": sample, "label": text_classes[pred]} for i, (sample, pred) in enumerate(zip(samples, predictions))}
-        # return output_dir
+#         # output_dir = {f"sample_{i}": {"text": sample, "label": text_classes[pred]} for i, (sample, pred) in enumerate(zip(samples, predictions))}
+#         # return output_dir
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/evaluate/")
 async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFile]=None):

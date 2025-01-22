@@ -10,7 +10,6 @@ export IMAGE_NAME="backend"
 export IMAGE_TAG="latest"
 
 # Build the Docker image
-# docker run -p 8080:8080  $IMAGE_NAME:$IMAGE_TAG
 docker build -f dockerfiles/banking_api.dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
 
 # Tag the Docker image
@@ -26,6 +25,7 @@ docker push \
 gcloud run deploy backend \
     --image=$LOCATION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$IMAGE_NAME:$IMAGE_TAG \
     --region=$LOCATION \
-    --platform=managed
+    --platform=managed \
+    --timeout=300s \
 
 echo gcloud run services describe backend --region=$LOCATION --format="value(status.url)"
