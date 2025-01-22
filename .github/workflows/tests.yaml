@@ -12,6 +12,7 @@ jobs:
   test:
     runs-on: ${{ matrix.operating-system }}
     strategy:
+      fail-fast: false
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest", "macos-latest"]
         python-version: ["3.11"]
@@ -27,6 +28,14 @@ jobs:
           cache: 'pip'
           cache-dependency-path: setup.py
 
+      # Authenticate with GCS
+      - name: Authenticate with GCS
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
+        run: |
+          echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
+
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install -U pip setuptools wheel
@@ -35,7 +44,12 @@ jobs:
           pip install -e .
           pip list
 
+      # Download data
+      - name: Pull data with DVC
+        run: |
+          dvc pull
 
+      # Run tests
       - name: Run tests & coverage
         run: |
           coverage run -m pytest tests/ && coverage report

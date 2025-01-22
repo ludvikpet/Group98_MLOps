@@ -1,5 +1,5 @@
 #import logging before loguru
-import os 
+import os
 import textwrap
 
 import torch
@@ -15,7 +15,7 @@ from omegaconf import DictConfig, OmegaConf
 import hydra
 from hydra.utils import to_absolute_path
 from dotenv import load_dotenv
-    
+
 from loguru import logger
 import wandb
 from transformers import AutoModel
@@ -42,12 +42,12 @@ def train(cfg: DictConfig):
         cloud_model_path = "/models/model.pth" #used to register trained model outside of docker container
         cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
         cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
-    
+
     print(OmegaConf.to_yaml(cfg))
-    
+
     hydra_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-    
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     # Add a log file to the logger
     hyperparameters = cfg.experiment.hyperparameters
     lr = hyperparameters.lr
@@ -57,16 +57,16 @@ def train(cfg: DictConfig):
     num_samples = hyperparameters.num_samples
 
     model_name = cfg.model.name
-    
+
     logger.info(f"Fetching model {model_name}")
     model = BertTypeClassification(model_name,num_classes=cfg.dataset.num_labels) #should be read from dataset config
-    print(model) 
+    print(model)
 
 #join logger and hydra log
     logger.add(os.path.join(hydra_path, "my_logger_hydra.log"))
     logger.info(cfg)
     logger.info("Training day and night")
-    #handle wandb based on config 
+    #handle wandb based on config
     if(environment_cfg.log_wandb==True):
         #load_dotenv()
         #following could be optimized using specific wandb config with entity and project fields.
@@ -78,11 +78,11 @@ def train(cfg: DictConfig):
     logger.info(f"{lr=}, {batch_size=}, {epochs=}")
 
     model = model.to(DEVICE)
-    train_set, _, _ = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, seed) #need to be variable based on cfg 
+    train_set, _, _ = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, seed) #need to be variable based on cfg
     string_labels = load_label_strings(cfg.basic.proc_path,cfg.dataset.name)
-    
 
-    if num_samples!=-1: #allow to only use a subset. 
+
+    if num_samples!=-1: #allow to only use a subset.
         N_SAMPLES = len(train_set)
         num_samples = min(num_samples, N_SAMPLES)
         subset_sizes = [num_samples, N_SAMPLES-num_samples] #train-subset and "other" subset (unused)
@@ -109,7 +109,7 @@ def train(cfg: DictConfig):
             statistics["train_loss"].append(loss.item())
             accuracy = (logits.argmax(dim=1) == labels).float().mean().item()
             statistics["train_accuracy"].append(accuracy)
-            
+
 
         epoch_loss = running_loss.item() / N_SAMPLES
         logger.info(f"Epoch {epoch}: {epoch_loss}")
@@ -117,11 +117,11 @@ def train(cfg: DictConfig):
         if(environment_cfg.log_wandb==True):
             wandb.log({"train_loss":epoch_loss})
             #make plot sample
-            if(epoch%5 == 0): #plot 4 samples of the training-set and corresponding top-5 distribution 
+            if(epoch%5 == 0): #plot 4 samples of the training-set and corresponding top-5 distribution
                 logits = logits[:4]
                 labels = labels[:4]
                 topk_ = torch.topk(logits,dim=1,k=5)
-                sentences = model.decode_input_ids(input_ids[:4]) #returns a list of sentences 
+                sentences = model.decode_input_ids(input_ids[:4]) #returns a list of sentences
                 top_probs = topk_.values
                 top_labs = topk_.indices
                 fig, axes = plt.subplots(1,4,figsize=(16,4))
@@ -132,7 +132,7 @@ def train(cfg: DictConfig):
                     probs = probs.detach().numpy()
                     string_labels_xaxis = [string_labels[str(idx)] for idx in top_labs]
                     # Wrap tick labels for better readability
-                    wrapped_labels = ['\n'.join(textwrap.wrap(label, width=10)) for label in string_labels_xaxis] #nice todo: only split on underscores, but requires more time than i have atm 
+                    wrapped_labels = ['\n'.join(textwrap.wrap(label, width=10)) for label in string_labels_xaxis] #nice todo: only split on underscores, but requires more time than i have atm
                     wrapped_title = '\n'.join(textwrap.wrap(sentences[j], width=30))
                     colors = ["tab:orange" if idx==labs else "tab:blue" for idx in top_labs] #plot blue if correct label is present in topk
                     ax.bar(x=xticks,height=probs,align="center",color=colors)
@@ -141,7 +141,7 @@ def train(cfg: DictConfig):
                     ax.set_title(wrapped_title)
                 plt.tight_layout()
                 wandb.log({"training predictions": wandb.Image(fig)})
-                
+
         plt.close()
 
     logger.info("Finished training")
@@ -152,7 +152,7 @@ def train(cfg: DictConfig):
         if environment_cfg.run_in_cloud==True:
             save_model_to_bucket(input_path=f"{os.getcwd()}/model.pth",output_path=cloud_model_path)
             logger.info(f"Saved model to cloud: {cloud_model_path}")
-            #register model to vertex model registry 
+            #register model to vertex model registry
             aiplatform.init(project="cleaninbox-448011", location="europe-west1")
             model = aiplatform.Model.upload(
                 display_name="banking77-classifier",
@@ -160,23 +160,23 @@ def train(cfg: DictConfig):
                 serving_container_image_uri=None,  # No inference container for now
             )
 
-    
+
     if(environment_cfg.log_wandb==True):
         artifact = wandb.Artifact(name="model",type="model")
         artifact.add_file(local_path=f"{os.getcwd()}/model.pth",name="model.pth")
         artifact.save()
         logger.info(f"Saved model artifact to f{os.getcwd()}/model.pth")
-    
+
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     axs[0].plot(statistics["train_loss"])
     axs[0].set_title("Train loss")
     axs[1].plot(statistics["train_accuracy"])
     axs[1].set_title("Train accuracy")
     #fig.savefig("reports/figures/training_statistics.png") <- with no hydra configuration
-    fig.savefig(f"{os.getcwd()}/training_statistics.png")   
+    fig.savefig(f"{os.getcwd()}/training_statistics.png")
     if(environment_cfg.log_wandb==True):
-        wandb.log({"training statistics":wandb.Image(fig)}) #try to log an image 
-    
+        wandb.log({"training statistics":wandb.Image(fig)}) #try to log an image
+
 if __name__ == "__main__":
     train()
     #typer.run(train)
