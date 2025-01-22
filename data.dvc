@@ -2,6 +2,9 @@ outs:
 - hash: md5
   path: data
   files:
+  - relpath: processed/banking77/label_strings.json
+    md5: 7d9658f2e1615bf12f08cbce6e3feb78
+    size: 2331
   - relpath: processed/banking77/test_labels.pt
     md5: 1cdfae5a48487ec866bba63417612b35
     size: 25840
