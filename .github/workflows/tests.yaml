@@ -41,12 +41,12 @@ jobs:
       # Use google auth key
       - uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: ${{ secrets.GOOGLE_AUTH_DATA }}
+          credentials_json: '${{ secrets.GOOGLE_AUTH_DATA }}'
 
       # Download data
       - name: Pull data with DVC
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_AUTH_DATA }}
+          GOOGLE_APPLICATION_CREDENTIALS: '${{ secrets.GOOGLE_AUTH_DATA }}'
         run: |
           dvc pull
 
