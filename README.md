@@ -103,6 +103,17 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 - [ ] Inferens (Troels) + integrer med GCP Run og API
 - [ ] Covergage + Continuous integration & workflow on data and models
 
+# Todo thursdag, Jan 23rd:
+* Finish workflows
+* Deploy pls :((((
+* Monitoring, both using Evidently and maybe also prometheus
+* Clean-up project
+* Sweeping
+* Add more experiment config files
+* Multiple models pushed to bucket
+* Set up train for GCP bucket pushing
+* Add fun things if you want :) (e.g. PyTorch Lightning)
+
 # Checklist
 
 ### Week 1
