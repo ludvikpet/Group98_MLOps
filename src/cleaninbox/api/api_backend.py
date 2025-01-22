@@ -17,20 +17,22 @@ import io
 from pathlib import Path
 from loguru import logger
 import sys
+from datasets import load_dataset
+import zipfile
 
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
 from cleaninbox.data import text_dataset, MyDataset, data_split, tokenize_data
 from cleaninbox.evaluate import eval
 from cleaninbox.train import train
+from cleaninbox.prediction import pred
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, labels, cfg, DEVICE, storage_client, bucket, model_ckpt, tokenizer
-
+    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, model_ckpt, tokenizer
 
     # Initialize Hydra configuration
     with initialize(config_path="../../../configs", version_base="1.1"):
@@ -50,8 +52,8 @@ async def lifespan(app: FastAPI):
 
     # Fetch data:
     _, _, test_data = text_dataset(cfg.dataset.val_size, Path(cfg.gs.proc_data), "", cfg.experiment.hyperparameters.seed, bucket=bucket)
-    # text_classes = test_data.tensors[3].unique().tolist() # test_data.tensors[3] -> labels tensor
-    labels = cfg.dataset.num_labels # test_data.tensors[3] -> labels tensor
+    dataset = load_dataset(cfg.dataset.name, trust_remote_code=True)
+    label_names = dataset["train"].features["label"].names
 
     tokenizer = BertTokenizer.from_pretrained(cfg.model.name)
 
@@ -59,7 +61,7 @@ async def lifespan(app: FastAPI):
         yield
 
     finally:
-        del model, test_data, labels, cfg, DEVICE, storage_client, bucket, model_ckpt, tokenizer
+        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, model_ckpt, tokenizer
 
 app = FastAPI(lifespan=lifespan)
 
@@ -108,20 +110,28 @@ def download_pretrained():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @app.get("/download-banking-data/")
-# def download_banking_data(raw: bool = False):
-#     try:
-#         # Download raw data:
-#         file_data = raw_data.download_as_bytes() if raw else proc_data.download_as_bytes()
-#         data = io.BytesIO(file_data)
+@app.get("/download-banking-data/")
+def download_banking_data(raw: bool = False):
+    try:
+        # Download data:
+        logger.info(f"raw path: {cfg.gs.raw_data}, proc path: {cfg.gs.proc_data}")
+        data_blobs = bucket.list_blobs(prefix=cfg.gs.raw_data) if raw else bucket.list_blobs(prefix=cfg.gs.proc_data)
+        logger.info(f"Fetched data blobs. Raw: {raw}, blobs: {data_blobs}")
 
-#         # Return raw data:
-#         return StreamingResponse(data,
-#                                  media_type="application/octet-stream",
-#                                  headers={"Content-Disposition": "attachment; filename={cfg.gs.raw_data.split('/')[-1]}"}
-#         )
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
+        # Create a zip file with the data:
+        zip_file = io.BytesIO()
+        with zipfile.ZipFile(zip_file, mode="w") as z:
+            for blob in data_blobs:
+                z.writestr(blob.name, blob.download_as_string())
+        
+        # Return the zip file:
+        return StreamingResponse(zip_file,
+                                    media_type="application/octet-stream",
+                                    headers={"Content-Disposition": "attachment; filename={cfg.gs.raw_data.split('/')[-1]}"}
+            )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/classify/")
@@ -187,46 +197,19 @@ async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFil
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-class PromptRequest(BaseModel):
+# Prediction endpoint
+class PredictRequest(BaseModel):
     prompt: str
 
-# Prediction endpoint
-@app.post("/predict")
-async def predict(request: PromptRequest):
+@app.post("/predict/")
+async def predict(request: PredictRequest):
     """
     Predict the label for a given prompt.
     """
     try:
         prompt = request.prompt
-        if not prompt:
-            raise HTTPException(status_code=400, detail="Prompt is empty")
-
-        print(f"Received prompt: {prompt}")
-
-        # Tokenize input
-        encoding = tokenizer(
-            [prompt],
-            padding=True,
-            truncation=True,
-            return_tensors="pt"
-        )
-        input_ids = encoding["input_ids"].to(DEVICE)
-        attention_mask = encoding["attention_mask"].to(DEVICE)
-        token_type_ids = encoding.get("token_type_ids", None)
-        if token_type_ids is not None:
-            token_type_ids = token_type_ids.to(DEVICE)
-
-        # Generate prediction
-        with torch.no_grad():
-            logits = model(input_ids, attention_mask, token_type_ids)
-            predicted_label = torch.argmax(logits, dim=1).item()
-            class_name = labels[predicted_label]
-
-        return {
-            "prompt": prompt,
-            "predicted_label": predicted_label,
-            "class_name": class_name
-        }
+        logger.info(f"Received prompt: {prompt}")
+        return pred(tokenizer, model, prompt, label_names, DEVICE)
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
