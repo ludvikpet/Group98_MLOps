@@ -31,13 +31,8 @@ gs:
 environment: 
   log_wandb: True
   run_in_cloud: True
-  model_ckpt: "${models}model.pth"
+  model_ckpt: "${basic.models.model_ckpt}"
 
 defaults:
     - experiment: overfit
     - optimizer: adam
-
-
-
-
-
