@@ -36,9 +36,30 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_test.txt
           pip install -e .
-          pip install gcloud CLI google-cloud-sdk google-cloud-storage google-cloud-aiplatform
+          pip install google-cloud-storage google-cloud-aiplatform
           pip list
 
+      # Install gcloud CLI on Ubuntu
+      - name: Install gcloud CLI on Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-sdk
+
+      # Install gcloud CLI on macOS
+      - name: Install gcloud CLI on macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew install --cask google-cloud-sdk
+
+      # Install gcloud CLI on Windows
+      - name: Install gcloud CLI on Windows
+        if: runner.os == 'Windows'
+        run: |
+          choco install google-cloud-sdk -y
+        env:
+          PATH: C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;${{ env.PATH }}
+      
       # Authenticate with GCS
       - name: Authenticate with GCS
         env:
