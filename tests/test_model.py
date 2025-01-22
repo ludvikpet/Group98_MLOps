@@ -11,7 +11,7 @@ from tests import _PROJECT_ROOT, _VOCAB_SIZE
 @pytest.fixture
 def config():
     """Pytest fixture which loads the configuration file"""
-    cfg = omegaconf.OmegaConf.load(f"{_PROJECT_ROOT}/configs/tests/test.yaml")
+    cfg = omegaconf.OmegaConf.load(f"{_PROJECT_ROOT}/configs/tests/config_test.yaml")
     return cfg
 
 @pytest.fixture
