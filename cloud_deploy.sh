@@ -9,8 +9,9 @@ export REPO_NAME="email-api"
 export IMAGE_NAME="backend"
 export IMAGE_TAG="latest"
 
-# Build the Docker image:
-docker build -f dockerfiles/banking_api.dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+# Build the Docker image
+# docker run -p 8080:8080  $IMAGE_NAME:$IMAGE_TAG
+# docker build -f dockerfiles/banking_api.dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
 
 # Tag the Docker image
 docker tag \
