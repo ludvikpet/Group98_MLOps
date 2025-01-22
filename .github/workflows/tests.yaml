@@ -46,7 +46,7 @@ jobs:
         run: |
           echo "${{ secrets.GOOGLE_AUTH_DATA }}" | head -c 50
 
-      # Use google auth key
+      # Authenticate using workload identity pools
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'cleaninbox-448011'
