@@ -34,6 +34,8 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
         run: |
           echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
+          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+          gcloud config set project cleaninbox-448011
         
       # Install dependencies
       - name: Install dependencies
