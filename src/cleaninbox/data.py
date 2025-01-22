@@ -118,10 +118,10 @@ def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -
     logger.info(f"text_dataset has path: {proc_path}")
     if bucket:
         # Load processed data from GCS:
-        train_text = torch.load(bucket.get_blob(proc_path + "/train_text.pt").name)
-        train_labels = torch.load(bucket.get_blob(proc_path + "/train_labels.pt").name)
-        test_text = torch.load(bucket.get_blob(proc_path + "/test_text.pt").name)
-        test_labels = torch.load(bucket.get_blob(proc_path + "/test_labels.pt").name)
+        train_text = torch.load(proc_path + "/train_text.pt")
+        train_labels = torch.load(proc_path + "/train_labels.pt")
+        test_text = torch.load(proc_path + "/test_text.pt")
+        test_labels = torch.load(proc_path + "/test_labels.pt")
     else:
         # Get locally processed data:
         train_text = torch.load(proc_path / "train_text.pt")
@@ -141,16 +141,6 @@ def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -
         return train, val, test
 
     return train, None, test
-
-def data_split(val_size, dataset: TensorDataset, seed=Optional[int]):
-    """ Split the data into training, validation, and test sets. """
-    if val_size > 0:
-        val_size = int(len(train) * val_size)
-        train_size = len(train) - val_size
-        train, val = random_split(train, [train_size, val_size], generator=torch.Generator().manual_seed(seed))
-
-        return train, val
-    
 
 @hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
 def preprocess(cfg: DictConfig) -> None:
