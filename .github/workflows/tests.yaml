@@ -51,6 +51,12 @@ jobs:
         with:
           project_id: 'cleaninbox-448011'
           workload_identity_provider: projects/170780472924/locations/global/workloadIdentityPools/github/providers/my-repo
+          service_account: 'dvc-ci@cleaninbox-448011.iam.gserviceaccount.com'
+
+      # Added step for verifying access to storage bucket
+      - name: List Buckets
+        run: |
+            gcloud storage buckets list
 
       # Download data
       - name: Pull data with DVC
