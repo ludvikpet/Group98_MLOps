@@ -1,49 +1,71 @@
-name: CML Data Pipeline
+name: CML Data Workflow
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - "data/**"  # Trigger on changes to data directory
-  pull_request:
-    paths:
-      - "data/**"
+      - '**/*.dvc'
+      - 'dvc.lock'
 
 jobs:
-  preprocess_data:
-    runs-on: ubuntu-latest
+  data-workflow:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: ["ubuntu-latest"]
+        python-version: ["3.11"]
 
     steps:
-      # Step 1: Check out the code
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Python environment
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+      # # Step 2: Set up Python
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: ${{ matrix.python-version }}
+      #     cache: 'pip'
+      #     cache-dependency-path: setup.py
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      # # Step 3: Install dependencies
+      # - name: Install dependencies
+      #   run: |
+      #     python -m pip install -U pip setuptools wheel
+      #     pip install -r requirements.txt
+      #     pip install google-cloud-storage google-cloud-aiplatform torch dvc[all]
+      #     pip list
 
-      # Step 3: Run preprocessing script
-      - name: Run dataset preprocessing
-        run: python src/cleaninbox/data.py preprocess --config-path configs --config-name config.yaml
+      # # Step 4: Authenticate with Google Cloud (Optional)
+      # - uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     project_id: 'cleaninbox-448011'
+      #     workload_identity_provider: projects/170780472924/locations/global/workloadIdentityPools/github/providers/my-repo
+      #     service_account: 'dvc-ci@cleaninbox-448011.iam.gserviceaccount.com'
 
-      # Step 4: Upload processed data artifacts (optional)
-      - name: Upload processed data
-        uses: actions/upload-artifact@v3
-        with:
-          name: processed-data
-          path: data/processed
+      # # Step 5: Pull data using DVC
+      # - name: Pull data with DVC
+      #   run: |
+      #     dvc pull
+      #     ls -la
 
-      # Step 5: Report statistics with CML
-      - name: CML Dataset Report
-        run: |
-          pip install cml
-          cml comment create --publish --file ./logs/preprocessing.log
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-d
+      # # Step 6: Debug missing data folder (Optional)
+      # - name: Debug missing data folder
+      #   run: |
+      #     find . -type d -name "data"
+      #     pwd
+
+      # # Step 7: Execute downstream tasks
+      # - name: Run downstream tasks (e.g., training)
+      #   run: |
+      #     python train.py
+
+      # # # Step 8: Deploy results (Optional)
+      # # - name: Deploy results to the cloud
+      # #   run: |
+      # #     python deploy.py
