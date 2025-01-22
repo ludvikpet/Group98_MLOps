@@ -39,7 +39,7 @@ class TestTraining:
         """Test that the loss function behaves as expected."""
         with initialize(config_path="../configs/tests", version_base="1.1"):
           # Compose the configuration for the test
-          cfg = compose(config_name="test")
+          cfg = compose(config_name="config_test")
 
           criterion = torch.nn.CrossEntropyLoss()
           optimizer = Adam(model.parameters(), lr=cfg.experiment.hyperparameters.lr)
@@ -76,7 +76,7 @@ class TestTraining:
         # Initialize Hydra
         with initialize(config_path="../configs/tests", version_base="1.1"):
             # Compose the configuration for the test
-            cfg = compose(config_name="test")
+            cfg = compose(config_name="config_test")
 
             # Mock wandb and torch.save:
             mock_wandb = mocker.patch("wandb.init", return_value=MagicMock())

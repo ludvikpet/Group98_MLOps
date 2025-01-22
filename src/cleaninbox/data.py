@@ -147,5 +147,5 @@ def run_text_dataset(cfg: DictConfig) -> None:
     logger.info(f"Train size: {len(train)}, Val size: {len(val)}, Test size: {len(test)}")
 
 if __name__ == "__main__":
-    # preprocess()
+    #preprocess()
     run_text_dataset()
