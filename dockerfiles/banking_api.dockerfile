@@ -23,7 +23,7 @@ COPY pyproject.toml pyproject.toml
 COPY configs configs
 
 # Install dependencies:
-RUN --mount-type=cache, target=/root/.cache/pip pip install -r requirements_backend.txt --no-cache-dir --verbose 
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_backend.txt 
 
 # Only used for local fast docker build:
 RUN pip install torch~=2.5.1 -i https://download.pytorch.org/whl/cpu
