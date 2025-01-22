@@ -1,5 +1,4 @@
 import torch
-import typer
 from cleaninbox.data import text_dataset
 from cleaninbox.model import BertTypeClassification
 from omegaconf import OmegaConf

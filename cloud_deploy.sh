@@ -5,9 +5,12 @@ set -e  # Exit immediately if a command exits with a non-zero status
 export PROJECT_ID="cleaninbox-448011"
 export LOCATION="europe-west1"
 #export SERVICE_NAME=load-and-transform-team-stats-to-bq-service  # Uncomment when needed
-export REPO_NAME="email-frontend"
+export REPO_NAME="email-api"
 export IMAGE_NAME="backend"
 export IMAGE_TAG="latest"
+
+# Build the Docker image:
+docker build -f dockerfiles/banking_api.dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
 
 # Tag the Docker image
 docker tag \
@@ -24,9 +27,4 @@ gcloud run deploy backend \
     --region=$LOCATION \
     --platform=managed
 
-
 echo gcloud run services describe backend --region=$LOCATION --format="value(status.url)")
-
-
-
-
