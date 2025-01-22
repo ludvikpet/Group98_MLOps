@@ -4,9 +4,13 @@ on:
   push:
     paths:
       - "data/**"  # Trigger on changes to data directory
+      - "data.dvc"
+      - "dvc.lock"
   pull_request:
     paths:
       - "data/**"
+      - "data.dvc"
+      - "dvc.lock"
 
 jobs:
   preprocess_data:
@@ -28,32 +32,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 3: Run preprocessing script
+      # Step 3: Install DVC and pull data
+      - name: Install DVC
+        run: |
+          pip install dvc[all]
+
+      - name: Pull data from DVC
+        run: |
+          dvc pull
+
+      # Step 4: Run preprocessing script
       - name: Run dataset preprocessing
         run: |
           python src/cleaninbox/data.py preprocess --config-path configs --config-name config.yaml
 
-      # Step 4: Validate processed data
+      # Step 5: Validate processed data
       - name: Validate processed data
         run: |
           test -f data/processed/train_text.pt || { echo "Processed training data not found"; exit 1; }
           test -f data/processed/test_text.pt || { echo "Processed test data not found"; exit 1; }
           test -f data/processed/label_strings.json || { echo "Label strings file not found"; exit 1; }
 
-      # Step 5: Run tests
+      # Step 6: Run tests
       - name: Run tests
         run: |
           pip install pytest
           pytest tests/ --disable-warnings
 
-      # Step 6: Upload processed data artifacts (optional)
+      # Step 7: Upload processed data artifacts (optional)
       - name: Upload processed data
         uses: actions/upload-artifact@v3
         with:
           name: processed-data
           path: data/processed
 
-      # Step 7: Report statistics with CML
+      # Step 8: Report statistics with CML
       - name: CML Dataset Report
         run: |
           pip install cml
