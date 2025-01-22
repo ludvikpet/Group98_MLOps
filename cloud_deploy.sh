@@ -6,11 +6,7 @@ export PROJECT_ID="cleaninbox-448011"
 export LOCATION="europe-west1"
 #export SERVICE_NAME=load-and-transform-team-stats-to-bq-service  # Uncomment when needed
 export REPO_NAME="email-api"
-<<<<<<< Updated upstream
 export IMAGE_NAME="backend"
-=======
-export IMAGE_NAME="frontend"
->>>>>>> Stashed changes
 export IMAGE_TAG="latest"
 
 # Build the Docker image
