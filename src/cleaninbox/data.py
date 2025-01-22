@@ -28,11 +28,14 @@ class MyDataset(Dataset):
         self.proc_dir = Path(to_absolute_path(proc_dir)) / Path(self.data_path).stem
         logger.info(f"Raw data path: {self.raw_dir}")
 
-    def __len__(self) -> int:
-        """Return the length of the dataset."""
+    def __len__(self): #Could also be empty
+        return len(self.train_text) if hasattr(self, "train_text") else 0
 
-    def __getitem__(self, index: int):
-        """Return a given sample from the dataset."""
+    def __getitem__(self, index): #Could also be empty
+        return {
+            "input_ids": self.train_text[index],
+            "labels": self.train_labels[index]
+        }
 
     @logger.catch(level="ERROR")
     def download_data(self, dset_name: str) -> datasets.dataset_dict.DatasetDict:
