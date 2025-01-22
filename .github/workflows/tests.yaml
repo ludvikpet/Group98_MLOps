@@ -56,7 +56,7 @@ jobs:
       # Download data
       - name: Pull data with DVC
         run: |
-          dvc pull
+          dvc pull data
 
       # Run tests
       - name: Run tests & coverage
