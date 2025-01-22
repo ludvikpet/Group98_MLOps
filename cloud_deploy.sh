@@ -28,4 +28,4 @@ gcloud run deploy backend \
     --region=$LOCATION \
     --platform=managed
 
-echo gcloud run services describe backend --region=$LOCATION --format="value(status.url)")
+echo gcloud run services describe backend --region=$LOCATION --format="value(status.url)"

@@ -9,8 +9,11 @@ from google.cloud import run_v2
 class PredictRequest(BaseModel):
     prompt: str
 
+@st.cache_resource  
+def get_backend_url():
+    return "https://backend-170780472924.europe-west1.run.app"
 
-# @st.cache_resource  
+#@st.cache_resource  
 # def get_backend_url():
 #     """Get the URL of the service automatically."""
 #     projectID = "cleaninbox-448011"
@@ -19,15 +22,15 @@ class PredictRequest(BaseModel):
 #     client = run_v2.ServicesClient()
 #     services = client.list_services(parent=parent)
 #     for service in services:
-#         if service.name.split("/")[-1] == "backend":
+#         if service.name.split("/")[-1] == "backend": #this check is probably wrong
 #             st.write(service.uri) #debugging
 #             return service.uri
 #     name = os.environ.get("BACKEND", None)
 #     st.write(name) #debugging
 #     return name
 
-def get_backend_url():
-    return "http://127.0.0.1:8000"
+# def get_backend_url():
+#     return "http://127.0.0.1:8000"
     
 def classify_email(request: PredictRequest, backend):
     """Send the email struct to the backend for classification."""
