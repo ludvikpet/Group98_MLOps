@@ -145,6 +145,7 @@ def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -
 
     return train, None, test
 
+
 @hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
 def preprocess(cfg: DictConfig) -> None:
     logger.info("Preprocessing data...")
@@ -155,6 +156,51 @@ def preprocess(cfg: DictConfig) -> None:
 def run_text_dataset(cfg: DictConfig) -> None:
     train, val, test = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, cfg.experiment.hyperparameters.seed)
     logger.info(f"Train size: {len(train)}, Val size: {len(val)}, Test size: {len(test)}")
+
+    # Compute dataset statistics
+    compute_statistics(cfg.basic.proc_path, cfg.dataset.name)
+
+def compute_statistics(proc_dir: Path, dataset_name: str, bucket: Optional[Bucket] = None) -> None:
+    """
+    Generate and display statistics about the dataset.
+
+    Args:
+        proc_dir (Path): Path to the processed data directory.
+        dataset_name (str): Name of the dataset.
+        bucket (Optional[Bucket]): If using Google Cloud Storage, pass the bucket instance.
+    """
+    # Resolve the path to the processed dataset
+    proc_path = Path(to_absolute_path(proc_dir)) / Path(dataset_name).stem if not bucket else str(proc_dir / Path(dataset_name).stem).replace("\\", "/")
+    logger.info(f"Processed data path: {proc_path}")
+
+    # Load processed data
+    try:
+        if bucket:
+            train_text = torch.load(proc_path + "/train_text.pt")
+            train_labels = torch.load(proc_path + "/train_labels.pt")
+            test_text = torch.load(proc_path + "/test_text.pt")
+            test_labels = torch.load(proc_path + "/test_labels.pt")
+        else:
+            train_text = torch.load(proc_path / "train_text.pt")
+            train_labels = torch.load(proc_path / "train_labels.pt")
+            test_text = torch.load(proc_path / "test_text.pt")
+            test_labels = torch.load(proc_path / "test_labels.pt")
+    except FileNotFoundError as e:
+        logger.error(f"Error loading data: {e}")
+        return
+
+    # Display statistics for training set
+    logger.info("Training Set Statistics:")
+    logger.info(f"Number of samples: {len(train_text['input_ids'])}")
+    logger.info(f"Label distribution: {torch.bincount(train_labels).tolist()}")
+    logger.info(f"Average token length: {torch.tensor([len(tokens) for tokens in train_text['input_ids']]).float().mean().item():.2f}")
+
+    # Display statistics for test set
+    logger.info("Test Set Statistics:")
+    logger.info(f"Number of samples: {len(test_text['input_ids'])}")
+    logger.info(f"Label distribution: {torch.bincount(test_labels).tolist()}")
+    logger.info(f"Average token length: {torch.tensor([len(tokens) for tokens in test_text['input_ids']]).float().mean().item():.2f}")
+
 
 if __name__ == "__main__":
     #preprocess()

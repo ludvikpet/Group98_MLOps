@@ -94,7 +94,8 @@ The directory structure of the project looks like this:
 
 #### Legend
 :x: = _Will not be prioritized_
-:large_orange_diamond: Currently working on or will be prioritized
+
+:large_orange_diamond: = Currently working on or will be prioritized
 
 ### Week 1
 
