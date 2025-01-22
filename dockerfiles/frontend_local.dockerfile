@@ -13,8 +13,6 @@ COPY src/cleaninbox/api/api_frontend.py /app/frontend.py
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_frontend.txt
 
-#EXPOSE $PORT
-#try and hardcode to see if this solves it 
-EXPOSE 8080 
+EXPOSE 8080
 
 ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port=8080", "--server.address=0.0.0.0"]

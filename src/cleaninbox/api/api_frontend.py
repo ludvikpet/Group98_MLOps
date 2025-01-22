@@ -10,23 +10,23 @@ class PredictRequest(BaseModel):
     prompt: str
 
 
-@st.cache_resource  
-def get_backend_url():
-    """Get the URL of the service automatically."""
-    projectID = "cleaninbox-448011"
-    REGION = "europe-west1"
-    parent = f"projects/{projectID}/locations/{REGION}"
-    client = run_v2.ServicesClient()
-    services = client.list_services(parent=parent)
-    for service in services:
-        if service.name.split("/")[-1] == "backend":
-            st.write(service.uri) #debugging
-            return service.uri
-    name = os.environ.get("BACKEND", None)
-    st.write(name) #debugging
-    return name
+# @st.cache_resource  
+# def get_backend_url():
+#     """Get the URL of the service automatically."""
+#     projectID = "cleaninbox-448011"
+#     REGION = "europe-west1"
+#     parent = f"projects/{projectID}/locations/{REGION}"
+#     client = run_v2.ServicesClient()
+#     services = client.list_services(parent=parent)
+#     for service in services:
+#         if service.name.split("/")[-1] == "backend":
+#             st.write(service.uri) #debugging
+#             return service.uri
+#     name = os.environ.get("BACKEND", None)
+#     st.write(name) #debugging
+#     return name
 
-def get_backend_url_local():
+def get_backend_url():
     return "http://127.0.0.1:8000"
     
 def classify_email(request: PredictRequest, backend):
@@ -91,5 +91,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    #remember add streamlite, pandas, google-cloud-run to requirements-frontent.txt
     main()
+    #port = int(os.environ.get("PORT", 8080))  # Default Streamlit port is 8501
+    #host = "0.0.0.0" # Bind to all interfaces, hard-coded, a bit dump
+    #st.web.bootstrap.run(main, f"--server.port={port} --server.address={host}", [])
