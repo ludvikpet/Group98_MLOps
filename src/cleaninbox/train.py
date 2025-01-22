@@ -6,7 +6,7 @@ import torch
 # import typer
 from cleaninbox.data import text_dataset, load_label_strings
 from cleaninbox.model import BertTypeClassification
-from google.cloud import storage, aiplatform
+from google.cloud import storage
 from torch.utils.data import DataLoader, random_split
 from torch.optim import Adam
 import torch.nn as nn
@@ -152,13 +152,13 @@ def train(cfg: DictConfig):
         if environment_cfg.run_in_cloud==True:
             save_model_to_bucket(input_path=f"{os.getcwd()}/model.pth",output_path=cloud_model_path)
             logger.info(f"Saved model to cloud: {cloud_model_path}")
-            #register model to vertex model registry
-            aiplatform.init(project="cleaninbox-448011", location="europe-west1")
-            model = aiplatform.Model.upload(
-                display_name="banking77-classifier",
-                artifact_uri=f"gs://banking77{cloud_model_path}",
-                serving_container_image_uri=None,  # No inference container for now
-            )
+            #register model to vertex model registry <- didn't work, we stopped this for now
+            # aiplatform.init(project="cleaninbox-448011", location="europe-west1")
+            # model = aiplatform.Model.upload(
+            #     display_name="banking77-classifier",
+            #     artifact_uri=f"gs://banking77{cloud_model_path}",
+            #     serving_container_image_uri=None,  # No inference container for now
+            # )
 
 
     if(environment_cfg.log_wandb==True):

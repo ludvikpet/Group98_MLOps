@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from typing import Tuple
+from typing import Tuple, Optional
 
 from datasets import load_dataset
 from torch.utils.data import Dataset, TensorDataset
@@ -14,6 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 from loguru import logger
 import sys
 from torch.utils.data import random_split
+from google.cloud.storage import Bucket
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
@@ -27,26 +28,20 @@ class MyDataset(Dataset):
         self.proc_dir = Path(to_absolute_path(proc_dir)) / Path(self.data_path).stem
         logger.info(f"Raw data path: {self.raw_dir}")
 
-    def __len__(self) -> int:
-        """Return the length of the dataset."""
+    def __len__(self): #Could also be empty
+        return len(self.train_text) if hasattr(self, "train_text") else 0
 
-    def __getitem__(self, index: int):
-        """Return a given sample from the dataset."""
+    def __getitem__(self, index): #Could also be empty
+        return {
+            "input_ids": self.train_text[index],
+            "labels": self.train_labels[index]
+        }
 
     @logger.catch(level="ERROR")
     def download_data(self, dset_name: str) -> datasets.dataset_dict.DatasetDict:
         logger.info(f"Collecting and unpacking dataset {dset_name}.")
         dataset = load_dataset(dset_name,trust_remote_code=True)
         return dataset
-
-    def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
-        encoding = tokenizer(text,# List of input texts
-        padding=True,              # Pad to the maximum sequence length
-        truncation=False,           # Truncate to the maximum sequence length if necessary
-        return_tensors='pt',      # Return PyTorch tensors
-        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded
-        )
-        return encoding
 
     @logger.catch(level="ERROR")
     def preprocess(self, model_name: str) -> None:
@@ -58,8 +53,8 @@ class MyDataset(Dataset):
 
         #tokenize data:
         tokenizer = BertTokenizer.from_pretrained(model_name)
-        train_text = self.tokenize_data(train_text_l,tokenizer) # N x maxSeqLen
-        test_text = self.tokenize_data(test_text_l,tokenizer) # N x maxSeqLen
+        train_text = tokenize_data(train_text_l,tokenizer) # N x maxSeqLen
+        test_text = tokenize_data(test_text_l,tokenizer) # N x maxSeqLen
 
         train_labels = torch.tensor(train_labels_l).long()
         test_labels = torch.tensor(test_labels_l).long()
@@ -94,8 +89,15 @@ class MyDataset(Dataset):
             json.dump(test_labels_l,f)
 
 
-
-
+def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
+        """ Tokenize the input text data. """
+        encoding = tokenizer(text,# List of input texts
+        padding=True,              # Pad to the maximum sequence length
+        truncation=False,           # Truncate to the maximum sequence length if necessary
+        return_tensors='pt',      # Return PyTorch tensors
+        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
+        )
+        return encoding
 
 def load_label_strings(proc_path, dataset_name) -> dict[int,str]:
     """
@@ -111,17 +113,25 @@ def load_label_strings(proc_path, dataset_name) -> dict[int,str]:
     with open(proc_path / "label_strings.json","r") as f:
         return json.load(f)
 
-def text_dataset(val_size, proc_path, dataset_name, seed) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
-    logger.info(f"Loading processed data: {dataset_name}")
-    proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem
-    print(f"text_dataset has path: {proc_path}")
-    proc_path = Path(to_absolute_path(proc_path))
+def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
+    """ Load the processed text dataset. """
+    
+    logger.info(f"Loading processed data: {dataset_name}, proc_path: {proc_path}")
+    proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem if not bucket else str(proc_path / Path(dataset_name).stem).replace("\\","/")
+    logger.info(f"text_dataset has path: {proc_path}")
+    if bucket:
+        # Load processed data from GCS:
+        train_text = torch.load(proc_path + "/train_text.pt")
+        train_labels = torch.load(proc_path + "/train_labels.pt")
+        test_text = torch.load(proc_path + "/test_text.pt")
+        test_labels = torch.load(proc_path + "/test_labels.pt")
+    else:
+        # Get locally processed data:
+        train_text = torch.load(proc_path / "train_text.pt")
+        train_labels = torch.load(proc_path / "train_labels.pt")
+        test_text = torch.load(proc_path / "test_text.pt")
+        test_labels = torch.load(proc_path / "test_labels.pt")
 
-    # Get processed data:
-    train_text = torch.load(proc_path / "train_text.pt")
-    train_labels = torch.load(proc_path / "train_labels.pt")
-    test_text = torch.load(proc_path / "test_text.pt")
-    test_labels = torch.load(proc_path / "test_labels.pt")
     train = TensorDataset(train_text["input_ids"], train_text["token_type_ids"], train_text["attention_mask"],train_labels)
     test = TensorDataset(test_text["input_ids"], test_text["token_type_ids"], test_text["attention_mask"], test_labels)
 
