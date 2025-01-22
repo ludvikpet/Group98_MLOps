@@ -28,11 +28,14 @@ class MyDataset(Dataset):
         self.proc_dir = Path(to_absolute_path(proc_dir)) / Path(self.data_path).stem
         logger.info(f"Raw data path: {self.raw_dir}")
 
-    def __len__(self) -> int:
-        """Return the length of the dataset."""
+    def __len__(self): #Could also be empty
+        return len(self.train_text) if hasattr(self, "train_text") else 0
 
-    def __getitem__(self, index: int):
-        """Return a given sample from the dataset."""
+    def __getitem__(self, index): #Could also be empty
+        return {
+            "input_ids": self.train_text[index],
+            "labels": self.train_labels[index]
+        }
 
     @logger.catch(level="ERROR")
     def download_data(self, dset_name: str) -> datasets.dataset_dict.DatasetDict:
@@ -118,10 +121,10 @@ def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -
     logger.info(f"text_dataset has path: {proc_path}")
     if bucket:
         # Load processed data from GCS:
-        train_text = torch.load(bucket.get_blob(proc_path + "/train_text.pt").name)
-        train_labels = torch.load(bucket.get_blob(proc_path + "/train_labels.pt").name)
-        test_text = torch.load(bucket.get_blob(proc_path + "/test_text.pt").name)
-        test_labels = torch.load(bucket.get_blob(proc_path + "/test_labels.pt").name)
+        train_text = torch.load(proc_path + "/train_text.pt")
+        train_labels = torch.load(proc_path + "/train_labels.pt")
+        test_text = torch.load(proc_path + "/test_text.pt")
+        test_labels = torch.load(proc_path + "/test_labels.pt")
     else:
         # Get locally processed data:
         train_text = torch.load(proc_path / "train_text.pt")
@@ -141,16 +144,6 @@ def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -
         return train, val, test
 
     return train, None, test
-
-def data_split(val_size, dataset: TensorDataset, seed=Optional[int]):
-    """ Split the data into training, validation, and test sets. """
-    if val_size > 0:
-        val_size = int(len(train) * val_size)
-        train_size = len(train) - val_size
-        train, val = random_split(train, [train_size, val_size], generator=torch.Generator().manual_seed(seed))
-
-        return train, val
-    
 
 @hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
 def preprocess(cfg: DictConfig) -> None:

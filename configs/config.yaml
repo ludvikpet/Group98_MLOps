@@ -20,6 +20,7 @@ basic:
   proc_banking_data: "${basic.proc_path}banking77/"
   models: "./models/"
   model_ckpt: "${basic.models}model.pth"
+
 gs:
   bucket: "banking77"
   data: "data/"
@@ -28,10 +29,20 @@ gs:
   model: "models"
   model_ckpt: "${gs.model}/model_current.pth"
   
-environment: 
+environment:
   log_wandb: True
   run_in_cloud: True
-  model_ckpt: "${basic.models.model_ckpt}"
+  models: "models/"
+  model_ckpt: "${gs.model}/model_current.pth"
+
+mount_gs:
+  bucket: "/gcs/${bucket}/"
+  data: "${mount_gs.bucket}data/"
+  raw_data: "${mount_gs.data}raw/banking77/"
+  proc_data: "${mount_gs.data}processed/banking77/"
+  models: "${mount_gs.bucket}models/"
+  model_ckpt: "${mount_gs.models}model_current.pth"
+
 
 defaults:
     - experiment: overfit

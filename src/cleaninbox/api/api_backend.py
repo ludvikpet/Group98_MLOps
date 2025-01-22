@@ -6,7 +6,6 @@ import anyio
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
-from PIL import Image
 from hydra import initialize, compose
 from typing import Optional
 import anyio
@@ -24,9 +23,8 @@ import uvicorn
 
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
-from cleaninbox.data import text_dataset, MyDataset, data_split, tokenize_data
+from cleaninbox.data import text_dataset, tokenize_data
 from cleaninbox.evaluate import eval
-from cleaninbox.train import train
 from cleaninbox.prediction import pred
 
 logger.remove()
@@ -34,7 +32,7 @@ logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, model_ckpt, tokenizer
+    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer
 
     # Initialize Hydra configuration
     with initialize(config_path="../../../configs", version_base="1.1"):
@@ -44,17 +42,15 @@ async def lifespan(app: FastAPI):
     storage_client = storage.Client()
     logger.info(cfg.gs.model_ckpt)
     bucket = storage_client.bucket(cfg.gs.bucket)
-    model_ckpt = bucket.get_blob(cfg.gs.model_ckpt)
-    logger.info(f"Model checkpoint: {model_ckpt}, type: {type(model_ckpt)}, location: {cfg.gs.model_ckpt}")
-    logger.info(f"proc data location: {cfg.gs.proc_data}")
+
     # Fetch model:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = BertTypeClassification(cfg.model.name, cfg.dataset.num_labels).to(DEVICE)
-    model.load_state_dict(torch.load(model_ckpt.name, map_location=DEVICE))
+    model.load_state_dict(torch.load(cfg.mount_gs.model_ckpt, map_location=DEVICE))
     model.eval()
 
     # Fetch data:
-    _, _, test_data = text_dataset(cfg.dataset.val_size, Path(cfg.gs.proc_data), "", cfg.experiment.hyperparameters.seed, bucket=bucket)
+    _, _, test_data = text_dataset(cfg.dataset.val_size, cfg.mount_gs.proc_data, "", cfg.experiment.hyperparameters.seed, bucket=bucket)
     dataset = load_dataset(cfg.dataset.name, trust_remote_code=True)
     label_names = dataset["train"].features["label"].names
 
@@ -64,7 +60,7 @@ async def lifespan(app: FastAPI):
         yield
 
     finally:
-        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, model_ckpt, tokenizer
+        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer
 
 app = FastAPI(lifespan=lifespan)
 
@@ -96,18 +92,22 @@ async def read_file(file: UploadFile = File(...)):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/download-pretrained-model/")
-def download_pretrained():
+def download_pretrained(model_name: str="model_current"):
 
     try:
-
         # Download model checkpoint:
-        file_data = model.download_as_bytes()
-        model_ckpt = io.BytesIO(file_data)
+        model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")    
+        logger.info(f"Downloading model checkpoint: {model_ckpt.name}")
+        file_data = model_ckpt.download_as_bytes()
+        ckpt = io.BytesIO(file_data)
+
 
         # Return model checkpoint:
-        return StreamingResponse(model_ckpt,
+        filename = os.path.basename(model_ckpt.name)
+        logger.info(f"Downloading model checkpoint: {filename}")
+        return StreamingResponse(ckpt,
                                  media_type="application/octet-stream",
-                                 headers={"Content-Disposition": "attachment; filename={cfg.gs.model_ckpt.split('/')[-1]}"}
+                                 headers={"Content-Disposition": "attachment; filename={filename}"}
         )
     
     except Exception as e:
@@ -120,19 +120,23 @@ def download_banking_data(raw: bool = False):
         logger.info(f"raw path: {cfg.gs.raw_data}, proc path: {cfg.gs.proc_data}")
         data_blobs = bucket.list_blobs(prefix=cfg.gs.raw_data) if raw else bucket.list_blobs(prefix=cfg.gs.proc_data)
         logger.info(f"Fetched data blobs. Raw: {raw}, blobs: {data_blobs}")
-
+        
         # Create a zip file with the data:
         zip_file = io.BytesIO()
         with zipfile.ZipFile(zip_file, mode="w") as z:
             for blob in data_blobs:
-                z.writestr(blob.name, blob.download_as_string())
+                if blob.name.endswith(".pt"):
+                    logger.info(f"Downloading blob: {blob.name}")
+                    z.writestr(blob.name, blob.download_as_string())
+        
+        zip_file.seek(0)
         
         # Return the zip file:
         return StreamingResponse(zip_file,
                                     media_type="application/octet-stream",
                                     headers={"Content-Disposition": "attachment; filename={cfg.gs.raw_data.split('/')[-1]}"}
             )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

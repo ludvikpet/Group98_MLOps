@@ -1,0 +1,49 @@
+name: CML Data Pipeline
+
+on:
+  push:
+    paths:
+      - "data/**"  # Trigger on changes to data directory
+  pull_request:
+    paths:
+      - "data/**"
+
+jobs:
+  preprocess_data:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 3: Run preprocessing script
+      - name: Run dataset preprocessing
+        run: python src/cleaninbox/data.py preprocess --config-path configs --config-name config.yaml
+
+      # Step 4: Upload processed data artifacts (optional)
+      - name: Upload processed data
+        uses: actions/upload-artifact@v3
+        with:
+          name: processed-data
+          path: data/processed
+
+      # Step 5: Report statistics with CML
+      - name: CML Dataset Report
+        run: |
+          pip install cml
+          cml comment create --publish --file ./logs/preprocessing.log
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+d
