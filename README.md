@@ -118,16 +118,19 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 
 ### Week 1
 
+* _Bullet points in italic font will not be prioritized_
+* **Bullet points in bold font are being worked on / will be prioritized**
+
 * :white_check_mark: Create a git repository (M5)
 * :white_check_mark: Make sure that all team members have write access to the GitHub repository (M5)
 * :white_check_mark: Create a dedicated environment for you project to keep track of your packages (M2)
 * :white_check_mark: Create the initial file structure using cookiecutter with an appropriate template (M6)
 * :white_check_mark: Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
 * :white_check_mark: Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
-* :x: Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
-    are using (M2+M6)
-* :x: Remember to comply with good coding practices (`pep8`) while doing the project (M7)
-* :x: Do a bit of code typing and remember to document essential parts of your code (M7)
+* :x: **Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
+    are using (M2+M6)**
+* :x: _Remember to comply with good coding practices (`pep8`) while doing the project (M7)_
+* :x: _Do a bit of code typing and remember to document essential parts of your code (M7)_
 * :white_check_mark: Setup version control for your data or part of your data (M8)
 * :white_check_mark: Add command line interfaces and project commands to your code where it makes sense (M9)
 * :white_check_mark: Construct one or multiple docker files for your code (M10)
@@ -137,46 +140,46 @@ Need to figure out why this is the case. ChatGPT says that it is probably becaus
 * :x: Use profiling to optimize your code (M12)
 * :white_check_mark: Use logging to log important events in your code (M14)
 * :white_check_mark: Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-* :x: Consider running a hyperparameter optimization sweep (M14)
-* :x: Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
+* :x: **Consider running a hyperparameter optimization sweep (M14)**
+* :x: _Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)_
 
 ### Week 2
 
 * :white_check_mark: Write unit tests related to the data part of your code (M16)
 * :white_check_mark: Write unit tests related to model construction and or model training (M16)
-* :x: Calculate the code coverage (M16)
+* :x: _Calculate the code coverage (M16)_
 * :white_check_mark: Get some continuous integration running on the GitHub repository (M17)
 * :white_check_mark: Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
-* :x: Add a linting step to your continuous integration (M17)
-* :x: Add pre-commit hooks to your version control setup (M18)
-* :x: Add a continuous workflow that triggers when data changes (M19)
-* :x: Add a continuous workflow that triggers when changes to the model registry is made (M19)
+* :x: _Add a linting step to your continuous integration (M17)_
+* :x: _Add pre-commit hooks to your version control setup (M18)_
+* :x: **Add a continuous workflow that triggers when data changes (M19)**
+* :x: **Add a continuous workflow that triggers when changes to the model registry is made (M19)**
 * :white_check_mark: Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
 * :white_check_mark: Create a trigger workflow for automatically building your docker images (M21)
 * :white_check_mark: Get your model training in GCP using either the Engine or Vertex AI (M21)
-* :x: Create a FastAPI application that can do inference using your model (M22)
-* :x: Deploy your model in GCP using either Functions or Run as the backend (M23)
-* :x: Write API tests for your application and setup continuous integration for these (M24)
-* :x: Load test your application (M24)
-* :x: Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
-* :x: Create a frontend for your API (M26)
+* :white_check_mark: Create a FastAPI application that can do inference using your model (M22)
+* :x: **Deploy your model in GCP using either Functions or Run as the backend (M23)**
+* :x: _Write API tests for your application and setup continuous integration for these (M24)_
+* :x: **Load test your application (M24)**
+* :x: _Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)_
+* :x: **Create a frontend for your API (M26)**
 
 ### Week 3
 
-* :x: Check how robust your model is towards data drifting (M27)
-* :x: Deploy to the cloud a drift detection API (M27)
-* :x: Instrument your API with a couple of system metrics (M28)
-* :x: Setup cloud monitoring of your instrumented application (M28)
-* :x: Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
-* :x: If applicable, optimize the performance of your data loading using distributed data loading (M29)
-* :x: If applicable, optimize the performance of your training pipeline by using distributed training (M30)
-* :x: Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
+* :x: **Check how robust your model is towards data drifting (M27)**
+* :x: **Deploy to the cloud a drift detection API (M27)**
+* :x: **Instrument your API with a couple of system metrics (M28)**
+* :x: **Setup cloud monitoring of your instrumented application (M28)**
+* :x: **Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)**
+* :x: _If applicable, optimize the performance of your data loading using distributed data loading (M29)_
+* :x: _If applicable, optimize the performance of your training pipeline by using distributed training (M30)_
+* :x: _Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)_
 
 ### Extra
 
-* :x: Write some documentation for your application (M32)
-* :x: Publish the documentation to GitHub Pages (M32)
-* :x: Revisit your initial project description. Did the project turn out as you wanted?
-* :x: Create an architectural diagram over your MLOps pipeline
-* :x: Make sure all group members have an understanding about all parts of the project
-* :x: Uploaded all your code to GitHub
+* :x: **Write some documentation for your application (M32)**
+* :x: _Publish the documentation to GitHub Pages (M32)_
+* :x: **Revisit your initial project description. Did the project turn out as you wanted?**
+* :x: _Create an architectural diagram over your MLOps pipeline_
+* :white_check_mark: Make sure all group members have an understanding about all parts of the project
+* :white_check_mark: Uploaded all your code to GitHub
