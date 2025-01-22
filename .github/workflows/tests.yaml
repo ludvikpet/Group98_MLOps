@@ -10,6 +10,9 @@ on:
 
 jobs:
   test:
+    permissions:
+     contents: 'read'
+     id-token: 'write'
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
