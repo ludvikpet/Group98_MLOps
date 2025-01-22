@@ -28,12 +28,6 @@ jobs:
           cache: 'pip'
           cache-dependency-path: setup.py
 
-      # Authenticate with GCS
-      - name: Authenticate with GCS
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
-        run: |
-          echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
         
       # Install dependencies
       - name: Install dependencies
@@ -42,10 +36,26 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_test.txt
           pip install -e .
+          pip install gcloud CLI google-cloud-sdk google-cloud-storage google-cloud-aiplatform
           pip list
+
+      # Authenticate with GCS
+      - name: Authenticate with GCS
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
+        run: |
+          echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
+      
+      # Configure service account with key
+      - name: Authenticate service account
+        run: |
+          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+          gcloud config set project cleaninbox-448011
 
       # Download data
       - name: Pull data with DVC
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
         run: |
           dvc pull
 
