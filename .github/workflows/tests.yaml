@@ -27,7 +27,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
           cache-dependency-path: setup.py
-
         
       # Install dependencies
       - name: Install dependencies
@@ -39,44 +38,15 @@ jobs:
           pip install google-cloud-storage google-cloud-aiplatform
           pip list
 
-      # Install gcloud CLI on Ubuntu
-      - name: Install gcloud CLI on Ubuntu
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-sdk
-
-      # Install gcloud CLI on macOS
-      - name: Install gcloud CLI on macOS
-        if: runner.os == 'macOS'
-        run: |
-          brew install --cask google-cloud-sdk
-
-      # Install gcloud CLI on Windows
-      - name: Install gcloud CLI on Windows
-        if: runner.os == 'Windows'
-        run: |
-          choco install google-cloud-sdk -y
-        env:
-          PATH: C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;${{ env.PATH }}
-      
-      # Authenticate with GCS
-      - name: Authenticate with GCS
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
-        run: |
-          echo "${{ secrets.GCLOUD_AUTH_DATA }}" > $GOOGLE_APPLICATION_CREDENTIALS
-      
-      # Configure service account with key
-      - name: Authenticate service account
-        run: |
-          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-          gcloud config set project cleaninbox-448011
+      # Use google auth key
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GOOGLE_AUTH_DATA }}
 
       # Download data
       - name: Pull data with DVC
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcloud-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_AUTH_DATA }}
         run: |
           dvc pull
 
