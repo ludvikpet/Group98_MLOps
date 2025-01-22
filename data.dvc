@@ -14,15 +14,31 @@ outs:
   - relpath: processed/banking77/test_labels.pt
     md5: 1182998128c9b5057708797102a8802b
     size: 25840
+    cloud:
+      remote_storage:
+        etag: 08c2aaa780b3fa8a031001
+        version_id: '1737035904308546'
   - relpath: processed/banking77/test_text.pt
     md5: be1d8cb48cdfab231d74395cf4ac58a6
     size: 6063266
+    cloud:
+      remote_storage:
+        etag: 089694b284b3fa8a031001
+        version_id: '1737035912874518'
   - relpath: processed/banking77/train_labels.pt
     md5: a87b335edef8e316520f296313b69a67
     size: 81205
+    cloud:
+      remote_storage:
+        etag: 0883bbae80b3fa8a031001
+        version_id: '1737035904425347'
   - relpath: processed/banking77/train_text.pt
     md5: 1a5f3f8aef30de412410881d5d3fad98
     size: 23528745
+    cloud:
+      remote_storage:
+        etag: 08bb87809cb3fa8a031001
+        version_id: '1737035962385339'
   - relpath: raw/.DS_Store
     md5: 0aaf8fa54962af7b477fb60a578b3eea
     size: 6148
