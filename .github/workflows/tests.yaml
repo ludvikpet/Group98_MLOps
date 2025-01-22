@@ -44,14 +44,13 @@ jobs:
           echo "${{ secrets.GOOGLE_AUTH_DATA }}" | head -c 50
 
       # Use google auth key
-      - uses: 'google-github-actions/auth@v1'
+      - uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: ${{ secrets.GOOGLE_AUTH_DATA }}
+          project_id: 'cleaninbox-448011'
+          workload_identity_provider: projects/170780472924/locations/global/workloadIdentityPools/github/providers/my-repo
 
       # Download data
       - name: Pull data with DVC
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_AUTH_DATA }}
         run: |
           dvc pull
 
