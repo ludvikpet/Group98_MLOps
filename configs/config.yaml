@@ -26,7 +26,7 @@ gs:
   raw_data: "${gs.data}raw/banking77/"
   proc_data: "${gs.data}processed/banking77/"
   model: "models"
-  model_ckpt: "${gs.model}/model.pth"
+  model_ckpt: "${gs.model}/model_current.pth"
   
 environment: 
   log_wandb: True

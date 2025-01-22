@@ -39,7 +39,8 @@ def train(cfg: DictConfig):
     """Train a model on banking77."""
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
-        cloud_model_path = "/models/model.pth" #used to register trained model outside of docker container
+        ##TODO: add configuration field which overwrites model path such that it is saved as experiment_indicator_model.pth
+        cloud_model_path = "models/model.pth" #used to register trained model outside of docker container
         cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
         cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
 

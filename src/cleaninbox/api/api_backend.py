@@ -1,5 +1,6 @@
 import json
 from contextlib import asynccontextmanager
+import os 
 
 import anyio
 import torch
@@ -19,6 +20,7 @@ from loguru import logger
 import sys
 from datasets import load_dataset
 import zipfile
+import uvicorn
 
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
@@ -40,6 +42,7 @@ async def lifespan(app: FastAPI):
     
     # Get bucket and relevant blobs:
     storage_client = storage.Client()
+    logger.info(cfg.gs.model_ckpt)
     bucket = storage_client.bucket(cfg.gs.bucket)
     model_ckpt = bucket.get_blob(cfg.gs.model_ckpt)
     logger.info(f"Model checkpoint: {model_ckpt}, type: {type(model_ckpt)}, location: {cfg.gs.model_ckpt}")
@@ -213,3 +216,10 @@ async def predict(request: PredictRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    uvicorn.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 8080))) 
+    #remember to add uvicorn to requirements 
+    #docker format using this approach is: 
+    #EXPOSE $PORT
+    #CMD exec uvicorn --port $PORT --host 0.0.0.0 api_backend:app
