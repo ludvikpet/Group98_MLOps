@@ -45,5 +45,5 @@ mount_gs:
 
 
 defaults:
-    - experiment: overfit
+    - experiment: fullfit
     - optimizer: adam
