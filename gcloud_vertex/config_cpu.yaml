@@ -5,15 +5,4 @@ workerPoolSpecs:
     replicaCount: 1
     containerSpec:
         imageUri: europe-west1-docker.pkg.dev/cleaninbox-448011/container-registry/train.image:latest
-#        env:
-#        - name: WANDB_API_KEY
-#          value: $WANDB_API_KEY
-#        - name: WANDB_PROJECT
-#          value: cleaninbox
-#        - name: WANDB_ENTITY
-#          value: cleaninbox
-#        args:
-#        - "++environment.log_wandb=True"
-#        - "++hyperparameters.epochs=2"
-          
-        
+#       
