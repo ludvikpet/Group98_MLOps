@@ -29,7 +29,7 @@ steps:
     - '--region'
     - 'europe-west1'
     - '--display-name'
-    - 'fullfit-40-epoch'
+    - 'fullfit-8k-40-epoch'
     - '--config'
     - '${_VERTEX_TRAIN_CONFIG}'
 substitutions:

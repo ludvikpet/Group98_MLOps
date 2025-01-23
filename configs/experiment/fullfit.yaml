@@ -5,11 +5,11 @@ hyperparameters:
   batch_size: 64
   epochs: 40
   seed: 42
-  num_samples: 64
+  num_samples: 8000
 
 logging:
   log_wandb: True
 
 experiment_description: 
-  name: fullfit
+  name: fullfit8k
 
