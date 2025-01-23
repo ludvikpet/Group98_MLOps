@@ -82,6 +82,7 @@ The directory structure of the project looks like this:
 # Todo thursdag, Jan 23rd:
 * Finish workflows
 * Deploy pls :((((
+* (M21) Setup the building process as continuous integration such that it is triggered every time we push code to the repository with triggers in the cloud
 * Monitoring, both using Evidently and maybe also prometheus
 * Clean-up project
 * Sweeping
