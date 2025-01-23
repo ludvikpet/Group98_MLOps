@@ -88,7 +88,7 @@ def train(cfg: DictConfig):
         subset_sizes = [num_samples, N_SAMPLES-num_samples] #train-subset and "other" subset (unused)
         train_set, _ = random_split(train_set, subset_sizes, generator=torch.Generator().manual_seed(seed))
     logger.info(f"training on {len(train_set)} samples. The rest is discarded.")
-    trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count())
+    trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count(),pin_memory=True)
     del train_set
 
     criterion = nn.CrossEntropyLoss()

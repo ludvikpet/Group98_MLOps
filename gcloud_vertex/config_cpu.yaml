@@ -1,8 +1,8 @@
 # config_cpu.yaml
 workerPoolSpecs:
     machineSpec:
-        machineType: n1-highmem-2
-    replicaCount: 1
+        machineType: n1-highmem-8
+    replicaCount: 2
     containerSpec:
         imageUri: europe-west1-docker.pkg.dev/cleaninbox-448011/container-registry/train.image:latest
         env:
@@ -16,4 +16,10 @@ workerPoolSpecs:
         args:
         - "++environment.log_wandb=True"
           
+retryConfig:
+    maxRetryCount: 0
+    
+scheduling:
+    timeout: 60000s  #
+    restartJobOnWorkerRestart: true
         
