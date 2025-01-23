@@ -7,12 +7,12 @@ outs:
     size: 0
     cloud:
       remote_storage:
-        etag: 08a9a5ddd8adfc8a031001
-        version_id: '1737103198605993'
-  - relpath: model.pth
+        etag: 08b0b881c6f38b8b031001
+        version_id: '1737637345909808'
+  - relpath: model_current.pth
     md5: 627e89acc5c74eae684daf7826902708
     size: 57523489
     cloud:
       remote_storage:
-        etag: 0896b8cdd9adfc8a031001
-        version_id: '1737103200443414'
+        etag: 0899ec82c7f38b8b031001
+        version_id: '1737637348029977'
