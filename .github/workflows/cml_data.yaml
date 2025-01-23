@@ -64,7 +64,7 @@ jobs:
 
       - name: Compute dataset statistics
         run: |
-          python compute_statistics.py
+          python src/cleaninbox/compute_statistics.py
       # # # Step 8: Deploy results (Optional)
       # # - name: Deploy results to the cloud
       # #   run: |
