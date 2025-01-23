@@ -3,12 +3,13 @@ name: CML Data Workflow
 on:
   push:
     branches:
-      - main
+      #- main
+      - data_statistic
     paths:
       - '**/*.dvc'
       - 'dvc.lock'
       - 'data/**'
-
+  workflow_dispatch:  # Allow manual triggering
 jobs:
   data-workflow:
     permissions:
