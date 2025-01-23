@@ -15,6 +15,7 @@ from loguru import logger
 import sys
 from torch.utils.data import random_split
 from google.cloud.storage import Bucket
+import io
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
@@ -113,25 +114,44 @@ def load_label_strings(proc_path, dataset_name) -> dict[int,str]:
     with open(proc_path / "label_strings.json","r") as f:
         return json.load(f)
 
+def get_data(bucket: Bucket, proc_path: Path):
+    if bucket:
+        # Load processed data from GCS:
+        data_blobs = bucket.list_blobs(prefix=proc_path)
+        logger.info(f"Loading processed data from GCS: {proc_path}")
+        train_text, train_labels, test_text, test_labels = None, None, None, None
+        for blob in data_blobs:
+            logger.info(f"Downloading blob: {blob.name}")
+            if blob.name.endswith(".pt"):
+                data_bytes = blob.download_as_bytes()
+                data = torch.load(io.BytesIO(data_bytes))
+                if "train_text" in blob.name:
+                    train_text = data
+                elif "train_labels" in blob.name:
+                    train_labels = data
+                elif "test_text" in blob.name:
+                    test_text = data
+                elif "test_labels" in blob.name:
+                    test_labels = data
+
+        return train_text, train_labels, test_text, test_labels
+    
+    # Get locally processed data:
+    train_text = torch.load(proc_path / "train_text.pt")
+    train_labels = torch.load(proc_path / "train_labels.pt")
+    test_text = torch.load(proc_path / "test_text.pt")
+    test_labels = torch.load(proc_path / "test_labels.pt")
+    
+    return train_text, train_labels, test_text, test_labels
+
 def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
     """ Load the processed text dataset. """
     
     logger.info(f"Loading processed data: {dataset_name}, proc_path: {proc_path}")
-    proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem if not bucket else str(proc_path / Path(dataset_name).stem).replace("\\","/")
+    proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem if not bucket else proc_path
     logger.info(f"text_dataset has path: {proc_path}")
-    if bucket:
-        # Load processed data from GCS:
-        train_text = torch.load(proc_path + "/train_text.pt")
-        train_labels = torch.load(proc_path + "/train_labels.pt")
-        test_text = torch.load(proc_path + "/test_text.pt")
-        test_labels = torch.load(proc_path + "/test_labels.pt")
-    else:
-        # Get locally processed data:
-        train_text = torch.load(proc_path / "train_text.pt")
-        train_labels = torch.load(proc_path / "train_labels.pt")
-        test_text = torch.load(proc_path / "test_text.pt")
-        test_labels = torch.load(proc_path / "test_labels.pt")
-
+    
+    train_text, train_labels, test_text, test_labels = get_data(bucket, proc_path)
     train = TensorDataset(train_text["input_ids"], train_text["token_type_ids"], train_text["attention_mask"],train_labels)
     test = TensorDataset(test_text["input_ids"], test_text["token_type_ids"], test_text["attention_mask"], test_labels)
 

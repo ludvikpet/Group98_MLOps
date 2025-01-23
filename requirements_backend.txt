@@ -23,3 +23,7 @@ google-cloud-storage==2.19.0
 # Pydantic:
 pydantic==2.10.5
 pydantic_core==2.27.2
+
+# Monitoring:
+evidently==0.5.1
+prometheus-client==0.21.1

@@ -20,7 +20,7 @@ import sys
 from datasets import load_dataset
 import zipfile
 import uvicorn
-
+import evidently
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
 from cleaninbox.data import text_dataset, tokenize_data
@@ -44,15 +44,19 @@ async def lifespan(app: FastAPI):
     bucket = storage_client.bucket(cfg.gs.bucket)
 
     # Fetch model:
+    model_blob = bucket.get_blob(cfg.gs.model_ckpt)
+    model_bytes = model_blob.download_as_bytes()
+    model_ckpt = io.BytesIO(model_bytes)
     logger.info(f"Fetching model checkpoint: {cfg.mount_gs.model_ckpt}")
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = BertTypeClassification(cfg.model.name, cfg.dataset.num_labels).to(DEVICE)
-    model.load_state_dict(torch.load(cfg.mount_gs.model_ckpt, map_location=DEVICE))
+
+    model.load_state_dict(torch.load(model_ckpt, map_location=DEVICE))
     model.eval()
 
     # Fetch data:
     logger.info(f"Fetching test data with val_size: {cfg.dataset.val_size}, proc_data: {cfg.mount_gs.proc_data}, seed: {cfg.experiment.hyperparameters.seed}, bucket: {bucket}")
-    _, _, test_data = text_dataset(cfg.dataset.val_size, cfg.mount_gs.proc_data, "", cfg.experiment.hyperparameters.seed, bucket=bucket)
+    _, _, test_data = text_dataset(cfg.dataset.val_size, cfg.gs.proc_data, "", cfg.experiment.hyperparameters.seed, bucket=bucket)
     dataset = load_dataset(cfg.dataset.name, trust_remote_code=True)
     label_names = dataset["train"].features["label"].names
 

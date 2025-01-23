@@ -28,4 +28,5 @@ gcloud run deploy backend \
     --platform=managed \
     --timeout=300s \
 
+# Get the URL of the deployed service
 echo gcloud run services describe backend --region=$LOCATION --format="value(status.url)"
