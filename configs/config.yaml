@@ -28,7 +28,9 @@ gs:
   proc_data: "${gs.data}processed/banking77/"
   model: "models"
   model_ckpt: "${gs.model}/model_current.pth"
-  
+  monitoring: "monitoring/"
+  monitoring_db: "${gs.monitoring}newdata_predictions_db.csv"
+
 environment:
   log_wandb: True
   run_in_cloud: True

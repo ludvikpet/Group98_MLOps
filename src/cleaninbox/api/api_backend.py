@@ -1,10 +1,12 @@
 import json
 from contextlib import asynccontextmanager
-import os 
+import os
 
+import time
+import datetime
 import anyio
 import torch
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from hydra import initialize, compose
 from typing import Optional
@@ -33,12 +35,12 @@ logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter
+    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, newdata_blob
 
     # Initialize Hydra configuration
     with initialize(config_path="../../../configs", version_base="1.1"):
         cfg = compose(config_name="config")
-    
+
     # Get bucket and relevant blobs:
     storage_client = storage.Client()
     logger.info(f"Fetching bucket: {cfg.gs.bucket}")
@@ -68,6 +70,12 @@ async def lifespan(app: FastAPI):
     error_counter = Counter("errors", "Number of application errors", ["endpoint"])
     model_performance = Histogram("model_performance", "Model performance metrics", ["metric"])
 
+    # TODO testing this part
+    with open("prediction_database.csv", "w") as file:
+        file.write("time, input_length, prediction, prediction_time\n")
+
+    # New data blob for monitoring:
+    newdata_blob = bucket.blob(cfg.gs.monitoring_db)
 
     try:
         logger.info("Starting application...")
@@ -75,7 +83,7 @@ async def lifespan(app: FastAPI):
 
     finally:
         logger.info("Shutting down application...")
-        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer
+        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, error_counter
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/metrics", make_asgi_app())
@@ -140,7 +148,7 @@ def download_pretrained(model_name: str="model_current"):
     """
     try:
         # Download model checkpoint:
-        model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")    
+        model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")
         logger.info(f"Downloading model checkpoint: {model_ckpt.name}")
         file_data = model_ckpt.download_as_bytes()
         ckpt = io.BytesIO(file_data)
@@ -153,7 +161,7 @@ def download_pretrained(model_name: str="model_current"):
                                  media_type="application/octet-stream",
                                  headers={"Content-Disposition": "attachment; filename={filename}"}
         )
-    
+
     except Exception as e:
         error_counter.labels("download_pretrained_model").inc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -171,7 +179,7 @@ def download_banking_data(raw: bool = False):
         logger.info(f"raw path: {cfg.gs.raw_data}, proc path: {cfg.gs.proc_data}")
         data_blobs = bucket.list_blobs(prefix=cfg.gs.raw_data) if raw else bucket.list_blobs(prefix=cfg.gs.proc_data)
         logger.info(f"Fetched data blobs. Raw: {raw}, blobs: {data_blobs}")
-        
+
         # Create a zip file with the data:
         zip_file = io.BytesIO()
         with zipfile.ZipFile(zip_file, mode="w") as z:
@@ -179,9 +187,9 @@ def download_banking_data(raw: bool = False):
                 if blob.name.endswith(".pt"):
                     logger.info(f"Downloading blob: {blob.name}")
                     z.writestr(blob.name, blob.download_as_string())
-        
+
         zip_file.seek(0)
-        
+
         # Return the zip file:
         return StreamingResponse(zip_file,
                                     media_type="application/octet-stream",
@@ -205,7 +213,7 @@ async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFil
     try:
 
         if texts and labels:
-            
+
             text = await texts.read()
             labels = await labels.read()
 
@@ -233,7 +241,7 @@ async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFil
         correct, total, accuracy = eval(test_dataloader, _model, DEVICE)
 
         return {"dataset": dataset_name, "correct": correct, "total": total, "accuracy": accuracy}
-        
+
     except Exception as e:
         error_counter.labels("evaluate").inc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -244,7 +252,8 @@ class PredictRequest(BaseModel):
     model_name: str = "model_current"
 
 @app.post("/predict/")
-async def predict(request: PredictRequest):
+async def predict(request: PredictRequest,
+                  background_tasks: BackgroundTasks):
     """
     Predict the label for a given prompt.
     """
@@ -252,8 +261,45 @@ async def predict(request: PredictRequest):
         prompt = request.prompt
         _model = retrieve_model(request.model_name)
         logger.info(f"Received prompt: {prompt}")
-        return pred(tokenizer, _model, prompt, label_names, DEVICE)
-        
+        start = time.time()
+        prediction_result = pred(tokenizer, _model, prompt, label_names, DEVICE)
+        prediction_time = time.time() - start
+        #background_tasks.add_task(save_prediction_to_gcp, prompt, label_names.index(prediction_result['predicted_label'])) # TODO test first
+        background_tasks.add_task(test_add_to_local_db, prompt, label_names.index(prediction_result['predicted_label']),prediction_time)
+        return prediction_result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def test_add_to_local_db(
+    prompt: str,
+    prediction: int,
+    prediction_time: float
+) -> None:
+    """Simple function to add prediction to database."""
+    now = str(datetime.now(tz=datetime.UTC))
+    with open("prediction_database.csv", "a") as file:
+        file.write(f"{now}, {len(prompt)}, {prediction}, {prediction_time}\n")
+
+# Save prediction results to GCP
+def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, prediction_time: float):
+    """Save the prediction results to GCP bucket."""
+    try:
+
+        logger.info(f"Writing prediction to CSV file: {cfg.gs.monitoring_db}")
+
+        csv_data = newdata_blob.download_as_string().decode('utf-8')
+
+        # Append new data to the CSV
+        timestamp = datetime.datetime.now(tz=datetime.UTC)
+        csv_data += f"\n{timestamp},{model_name},{len(prompt)},{prediction},{prediction_time}"
+
+        # Upload the updated CSV back to GCP
+        newdata_blob.upload_from_string(csv_data)
+
+        logger.info(f"Data written to CSV file: {cfg.gs.monitoring_db}")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
