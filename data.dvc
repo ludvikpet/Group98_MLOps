@@ -2,6 +2,9 @@ outs:
 - hash: md5
   path: data
   files:
+  - relpath: monitoring/newdata_predictions_db.csv
+    md5: d41d8cd98f00b204e9800998ecf8427e
+    size: 0
   - relpath: processed/banking77/label_strings.json
     md5: 7d9658f2e1615bf12f08cbce6e3feb78
     size: 2331
