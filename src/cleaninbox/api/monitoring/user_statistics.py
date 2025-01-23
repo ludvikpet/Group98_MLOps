@@ -19,6 +19,7 @@ storage_client = storage.Client()
 bucket = storage_client.bucket(cfg.gs.bucket)
 # Fetch request-database:
 user_data_blob = bucket.get_blob("data/monitoring/newdata_predictions_db.csv")
+st.write(f"Trying to fetch request data from {user_data_blob}")
 user_data_bytes = user_data_blob.download_as_bytes()
 user_data = io.BytesIO(user_data_bytes)
 
