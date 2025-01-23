@@ -3,7 +3,7 @@
 hyperparameters:
   lr: 1e-4
   batch_size: 64
-  epochs: 1
+  epochs: 40
   seed: 42
   num_samples: -1
 
