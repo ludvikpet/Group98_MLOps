@@ -3,7 +3,7 @@ name: CML Data Workflow
 on:
   push:
     branches:
-      - main
+      #- main
       - data_statistic
     paths:
       - '**/*.dvc'
