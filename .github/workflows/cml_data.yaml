@@ -7,6 +7,7 @@ on:
     paths:
       - '**/*.dvc'
       - 'dvc.lock'
+      - 'data/**'
 
 jobs:
   data-workflow:
@@ -41,18 +42,18 @@ jobs:
           pip install google-cloud-storage google-cloud-aiplatform torch dvc[all]
           pip list
 
-      # # Step 4: Authenticate with Google Cloud (Optional)
-      # - uses: 'google-github-actions/auth@v2'
-      #   with:
-      #     project_id: 'cleaninbox-448011'
-      #     workload_identity_provider: projects/170780472924/locations/global/workloadIdentityPools/github/providers/my-repo
-      #     service_account: 'dvc-ci@cleaninbox-448011.iam.gserviceaccount.com'
+      # Step 4: Authenticate with Google Cloud (Optional)
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'cleaninbox-448011'
+          workload_identity_provider: projects/170780472924/locations/global/workloadIdentityPools/github/providers/my-repo
+          service_account: 'dvc-ci@cleaninbox-448011.iam.gserviceaccount.com'
 
-      # # Step 5: Pull data using DVC
-      # - name: Pull data with DVC
-      #   run: |
-      #     dvc pull
-      #     ls -la
+      # Step 5: Pull data using DVC
+      - name: Pull data with DVC
+        run: |
+          dvc pull
+          ls -la
 
       # # Step 6: Debug missing data folder (Optional)
       # - name: Debug missing data folder
@@ -60,10 +61,9 @@ jobs:
       #     find . -type d -name "data"
       #     pwd
 
-      - name: Check data statistics
+      - name: Compute dataset statistics
         run: |
-          python data.py
-
+          python compute_statistics.py
       # # # Step 8: Deploy results (Optional)
       # # - name: Deploy results to the cloud
       # #   run: |
