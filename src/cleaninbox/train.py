@@ -70,7 +70,7 @@ def train(cfg: DictConfig):
     if(environment_cfg.log_wandb==True):
         #load_dotenv()
         #following could be optimized using specific wandb config with entity and project fields.
-        wandb.init(entity="cleaninbox_02476",project="banking77",config=dict(hyperparameters),settings=wandb.Settings(start_method="fork", heartbeat_interval=30)) #inherits API key from environment by directly passing it when running container. Now using vertex injection. Note: other args should in principle also be inherited from config json.
+        wandb.init(entity="cleaninbox_02476",project="banking77",config=dict(hyperparameters)) #inherits API key from environment by directly passing it when running container. Now using vertex injection. Note: other args should in principle also be inherited from config json.
         logger.debug("using wandb")
     #wandb.login(key=os.getenv("WANDB_API_KEY"))
     torch.manual_seed(seed)
