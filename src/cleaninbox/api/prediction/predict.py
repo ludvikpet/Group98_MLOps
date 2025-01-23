@@ -12,9 +12,9 @@ st.set_page_config(page_title="Cleaninbox", page_icon=":mailbox_with_no_mail:")
 class PredictRequest(BaseModel):
     prompt: str
 
-#@st.cache_resource  
-#def get_backend_url():
-#    return "https://backend-170780472924.europe-west1.run.app"
+@st.cache_resource  
+def get_backend_url():
+    return "https://backend-170780472924.europe-west1.run.app"
 
 #@st.cache_resource  
 # def get_backend_url():
@@ -32,13 +32,13 @@ class PredictRequest(BaseModel):
 #     st.write(name) #debugging
 #     return name
 
-def get_backend_url():
-    return "http://127.0.0.1:8000"
+#def get_backend_url():
+#    return "http://127.0.0.1:8000"
     
 def classify_email(request: PredictRequest, backend):
     """Send the email struct to the backend for classification."""
     predict_url = f"{backend}/predict/"
-    st.write(f"Predict-url: {predict_url}")
+    #st.write(f"Predict-url: {predict_url}")
     #response = requests.post(predict_url, files={"image": image}, timeout=60)
     #files = {"file": ("image.jpg", mail_str, "image/jpeg")}
     response = requests.post(url=predict_url, json=request.model_dump(), timeout=60)
@@ -73,7 +73,7 @@ request = PredictRequest(prompt=input_str)
 
 if len(request.prompt)>0:
     result = classify_email(request, backend=backend)
-    st.write(result)
+    #st.write(result)
 
     if result is not None:
         prediction = result["predicted_label"]
