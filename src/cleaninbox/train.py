@@ -42,7 +42,7 @@ def train(cfg: DictConfig):
     epochs = hyperparameters.epochs
     seed = hyperparameters.seed
     num_samples = hyperparameters.num_samples
-    experiment_name = cfg.experiment_description.name #currently overfit or fullfit -> defines output file in google cloud
+    experiment_name = cfg.experiment.experiment_description.name #currently overfit or fullfit -> defines output file in google cloud
 
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
