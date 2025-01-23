@@ -10,12 +10,18 @@ data_drift_page = st.Page(
     "monitoring/data_drifting.py", title="Monitoring", icon=":material/bar_chart:", default=False
 )
 
+statistics_page = st.Page(
+    "monitoring/user_statistics.py", title="Usage statistics", icon=":material/pie_chart:", default=False    
+)
+
 pg = st.navigation(
     {
         "Home": [home_page],
         "Predict": [predict_page],
         "Monitoring": [data_drift_page],
+        "Usage statistics": [statistics_page]
         #"Tools": [search, history],
     }
 )
+
 pg.run()
