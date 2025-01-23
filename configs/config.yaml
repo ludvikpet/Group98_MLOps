@@ -10,7 +10,7 @@ model:
 dataset:
   name: "PolyAI/banking77"
   num_labels: 77
-  val_size: 0.2
+  val_size: 0
   num_train_samples: 10003
   num_test_samples: 3080
 
@@ -47,5 +47,5 @@ mount_gs:
 
 
 defaults:
-    - experiment: overfit
+    - experiment: fullfit
     - optimizer: adam

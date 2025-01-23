@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from omegaconf import DictConfig, OmegaConf
 import hydra
 from hydra.utils import to_absolute_path
-from dotenv import load_dotenv
 
 from loguru import logger
 import wandb
@@ -37,10 +36,17 @@ def save_model_to_bucket(input_path, output_path) -> None:
 @hydra.main(version_base="1.1", config_path="../../configs",config_name="config")
 def train(cfg: DictConfig):
     """Train a model on banking77."""
+    hyperparameters = cfg.experiment.hyperparameters
+    lr = hyperparameters.lr
+    batch_size = hyperparameters.batch_size
+    epochs = hyperparameters.epochs
+    seed = hyperparameters.seed
+    num_samples = hyperparameters.num_samples
+    experiment_name = cfg.experiment.experiment_description.name #currently overfit or fullfit -> defines output file in google cloud
+
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
-        ##TODO: add configuration field which overwrites model path such that it is saved as experiment_indicator_model.pth
-        cloud_model_path = "models/model.pth" #used to register trained model outside of docker container
+        cloud_model_path = f"models/{experiment_name}.pth" #used to register trained model outside of docker container
         cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
         cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
 
@@ -49,21 +55,14 @@ def train(cfg: DictConfig):
     hydra_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Add a log file to the logger
-    hyperparameters = cfg.experiment.hyperparameters
-    lr = hyperparameters.lr
-    batch_size = hyperparameters.batch_size
-    epochs = hyperparameters.epochs
-    seed = hyperparameters.seed
-    num_samples = hyperparameters.num_samples
-
+    
     model_name = cfg.model.name
 
     logger.info(f"Fetching model {model_name}")
     model = BertTypeClassification(model_name,num_classes=cfg.dataset.num_labels) #should be read from dataset config
     print(model)
 
-#join logger and hydra log
+    #join logger and hydra log
     logger.add(os.path.join(hydra_path, "my_logger_hydra.log"))
     logger.info(cfg)
     logger.info("Training day and night")
@@ -88,13 +87,13 @@ def train(cfg: DictConfig):
         num_samples = min(num_samples, N_SAMPLES)
         subset_sizes = [num_samples, N_SAMPLES-num_samples] #train-subset and "other" subset (unused)
         train_set, _ = random_split(train_set, subset_sizes, generator=torch.Generator().manual_seed(seed))
-    logger.debug(f"training on {len(train_set)} samples. The rest is discarded.")
-    trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    logger.info(f"training on {len(train_set)} samples. The rest is discarded.")
+    trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count(),pin_memory=True)
     del train_set
 
     criterion = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=lr)
-
+    logger.info("... Beginning training...")
     statistics = {"train_loss": [], "train_accuracy": []}
     for epoch in range(epochs):
         running_loss = 0.0
