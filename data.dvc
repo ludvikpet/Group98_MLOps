@@ -79,6 +79,3 @@ outs:
       remote_storage:
         etag: 08b2a882f1c78b8b031001
         version_id: '1737625624941618'
-  - relpath: test.txt
-    md5: d6a6fa35f3106edaed2e32d363f049a2
-    size: 12
