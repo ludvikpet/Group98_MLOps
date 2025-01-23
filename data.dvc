@@ -12,6 +12,9 @@ outs:
   - relpath: data2.txt
     md5: d6a6fa35f3106edaed2e32d363f049a2
     size: 12
+  - relpath: data3.txt
+    md5: d6a6fa35f3106edaed2e32d363f049a2
+    size: 12
   - relpath: processed/banking77/label_strings.json
     md5: 3db0e59f3e0769abc392a44377f0284e
     size: 2332
