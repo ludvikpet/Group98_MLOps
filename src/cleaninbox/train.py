@@ -37,10 +37,17 @@ def save_model_to_bucket(input_path, output_path) -> None:
 @hydra.main(version_base="1.1", config_path="../../configs",config_name="config")
 def train(cfg: DictConfig):
     """Train a model on banking77."""
+    hyperparameters = cfg.experiment.hyperparameters
+    lr = hyperparameters.lr
+    batch_size = hyperparameters.batch_size
+    epochs = hyperparameters.epochs
+    seed = hyperparameters.seed
+    num_samples = hyperparameters.num_samples
+    experiment_name = cfg.experiment_description.name #currently overfit or fullfit -> defines output file in google cloud
+
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
-        ##TODO: add configuration field which overwrites model path such that it is saved as experiment_indicator_model.pth
-        cloud_model_path = "models/model.pth" #used to register trained model outside of docker container
+        cloud_model_path = f"models/{experiment_name}.pth" #used to register trained model outside of docker container
         cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
         cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
 
@@ -49,21 +56,14 @@ def train(cfg: DictConfig):
     hydra_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Add a log file to the logger
-    hyperparameters = cfg.experiment.hyperparameters
-    lr = hyperparameters.lr
-    batch_size = hyperparameters.batch_size
-    epochs = hyperparameters.epochs
-    seed = hyperparameters.seed
-    num_samples = hyperparameters.num_samples
-
+    
     model_name = cfg.model.name
 
     logger.info(f"Fetching model {model_name}")
     model = BertTypeClassification(model_name,num_classes=cfg.dataset.num_labels) #should be read from dataset config
     print(model)
 
-#join logger and hydra log
+    #join logger and hydra log
     logger.add(os.path.join(hydra_path, "my_logger_hydra.log"))
     logger.info(cfg)
     logger.info("Training day and night")
