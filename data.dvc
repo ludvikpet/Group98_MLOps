@@ -2,13 +2,6 @@ outs:
 - hash: md5
   path: data
   files:
-  - relpath: monitoring/newdata_predictions_db.csv
-    md5: d41d8cd98f00b204e9800998ecf8427e
-    size: 0
-    cloud:
-      remote_storage:
-        etag: 0882f08fc6f38b8b031001
-        version_id: '1737637346146306'
   - relpath: processed/banking77/label_strings.json
     md5: 3db0e59f3e0769abc392a44377f0284e
     size: 2332
@@ -72,3 +65,9 @@ outs:
       remote_storage:
         etag: 08f48895c6f38b8b031001
         version_id: '1737637346231412'
+  - relpath: raw/new_data.json
+    md5: d2c936c403cefc6ba77a43bde3c7a6a7
+    size: 40
+  - relpath: raw/new_sample.json
+    md5: d2c936c403cefc6ba77a43bde3c7a6a7
+    size: 40
