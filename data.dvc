@@ -68,6 +68,14 @@ outs:
   - relpath: raw/new_data.json
     md5: d2c936c403cefc6ba77a43bde3c7a6a7
     size: 40
+    cloud:
+      remote_storage:
+        etag: 08c6ff91b5f98b8b031001
+        version_id: '1737638921142214'
   - relpath: raw/new_sample.json
     md5: d2c936c403cefc6ba77a43bde3c7a6a7
     size: 40
+    cloud:
+      remote_storage:
+        etag: 08ebeba4b5f98b8b031001
+        version_id: '1737638921450987'
