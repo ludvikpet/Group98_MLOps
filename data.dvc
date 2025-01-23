@@ -12,9 +12,17 @@ outs:
   - relpath: data2.txt
     md5: d6a6fa35f3106edaed2e32d363f049a2
     size: 12
+    cloud:
+      remote_storage:
+        etag: 0897e5f2c88b8c8b031001
+        version_id: '1737643794412183'
   - relpath: data3.txt
     md5: d6a6fa35f3106edaed2e32d363f049a2
     size: 12
+    cloud:
+      remote_storage:
+        etag: 089c90fac88b8c8b031001
+        version_id: '1737643794532380'
   - relpath: processed/banking77/label_strings.json
     md5: 3db0e59f3e0769abc392a44377f0284e
     size: 2332
