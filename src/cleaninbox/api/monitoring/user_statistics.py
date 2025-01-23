@@ -4,9 +4,9 @@ import streamlit as st
 import numpy as np
 from google.cloud import storage
 from hydra import initialize, compose
+import pandas as pd
 
-
-st.set_page_config(page_title="Data drifting", page_icon="📈", layout="wide")
+st.set_page_config(page_title="User statistics", page_icon="📈")
 
 st.markdown("# User statistics")
 st.sidebar.header("User statistics")
@@ -23,4 +23,12 @@ user_data_bytes = user_data_blob.download_as_bytes()
 user_data = io.BytesIO(user_data_bytes)
 
 # Read file and keep in variable
+df = pd.read_csv(user_data)
+st.write(f"Currently we have served {df.shape[0]} user requests!")
+st.write("Dataframe preview:")
+st.dataframe(df.head())
+st.write("Some prompt statistics:")
+st.dataframe(df.describe())
+
+
 
