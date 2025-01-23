@@ -36,7 +36,7 @@ environment:
   model_ckpt: "${gs.model}/model_current.pth"
 
 mount_gs:
-  bucket: "/gcs/${bucket}/"
+  bucket: "/gcs/${gs.bucket}/"
   data: "${mount_gs.bucket}data/"
   raw_data: "${mount_gs.data}raw/banking77/"
   proc_data: "${mount_gs.data}processed/banking77/"

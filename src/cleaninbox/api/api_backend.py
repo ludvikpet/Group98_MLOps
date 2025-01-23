@@ -40,26 +40,31 @@ async def lifespan(app: FastAPI):
     
     # Get bucket and relevant blobs:
     storage_client = storage.Client()
-    logger.info(cfg.gs.model_ckpt)
+    logger.info(f"Fetching bucket: {cfg.gs.bucket}")
     bucket = storage_client.bucket(cfg.gs.bucket)
 
     # Fetch model:
+    logger.info(f"Fetching model checkpoint: {cfg.mount_gs.model_ckpt}")
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = BertTypeClassification(cfg.model.name, cfg.dataset.num_labels).to(DEVICE)
     model.load_state_dict(torch.load(cfg.mount_gs.model_ckpt, map_location=DEVICE))
     model.eval()
 
     # Fetch data:
+    logger.info(f"Fetching test data with val_size: {cfg.dataset.val_size}, proc_data: {cfg.mount_gs.proc_data}, seed: {cfg.experiment.hyperparameters.seed}, bucket: {bucket}")
     _, _, test_data = text_dataset(cfg.dataset.val_size, cfg.mount_gs.proc_data, "", cfg.experiment.hyperparameters.seed, bucket=bucket)
     dataset = load_dataset(cfg.dataset.name, trust_remote_code=True)
     label_names = dataset["train"].features["label"].names
 
+    logger.info(f"Fetching tokenizer: {cfg.model.name}")
     tokenizer = BertTokenizer.from_pretrained(cfg.model.name)
 
     try:
+        logger.info("Starting application...")
         yield
 
     finally:
+        logger.info("Shutting down application...")
         del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer
 
 app = FastAPI(lifespan=lifespan)
