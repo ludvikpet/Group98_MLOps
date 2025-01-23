@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from omegaconf import DictConfig, OmegaConf
 import hydra
 from hydra.utils import to_absolute_path
-from dotenv import load_dotenv
 
 from loguru import logger
 import wandb
