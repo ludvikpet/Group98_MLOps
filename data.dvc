@@ -5,18 +5,38 @@ outs:
   - relpath: processed/banking77/label_strings.json
     md5: 3db0e59f3e0769abc392a44377f0284e
     size: 2332
+    cloud:
+      remote_storage:
+        etag: 08809981f1c78b8b031001
+        version_id: '1737625624923264'
   - relpath: processed/banking77/test_labels.pt
     md5: 1cdfae5a48487ec866bba63417612b35
     size: 25840
+    cloud:
+      remote_storage:
+        etag: 08fcd682f1c78b8b031001
+        version_id: '1737625624947580'
   - relpath: processed/banking77/test_text.pt
     md5: ed7927a93f22d1282cfe4d0842f094d6
     size: 6063266
+    cloud:
+      remote_storage:
+        etag: 0896c5b6f1c78b8b031001
+        version_id: '1737625625797270'
   - relpath: processed/banking77/train_labels.pt
     md5: 433a8e53863631229915dde8c3a82b13
     size: 81205
+    cloud:
+      remote_storage:
+        etag: 08f3d383f1c78b8b031001
+        version_id: '1737625624963571'
   - relpath: processed/banking77/train_text.pt
     md5: 6a429a84f9e295650ce2454ff107d3ff
     size: 23528745
+    cloud:
+      remote_storage:
+        etag: 08a7ffdaf1c78b8b031001
+        version_id: '1737625626394535'
   - relpath: raw/banking77/test_labels.json
     md5: ea07086bf2484f30441c379b2a7735c4
     size: 11920
@@ -48,9 +68,14 @@ outs:
   - relpath: raw/new_data.json
     md5: d2c936c403cefc6ba77a43bde3c7a6a7
     size: 40
+    cloud:
+      remote_storage:
+        etag: 08e3fef9f0c78b8b031001
+        version_id: '1737625624805219'
   - relpath: raw/new_sample.json
     md5: d2c936c403cefc6ba77a43bde3c7a6a7
     size: 40
-  - relpath: test.txt
-    md5: d6a6fa35f3106edaed2e32d363f049a2
-    size: 12
+    cloud:
+      remote_storage:
+        etag: 08b2a882f1c78b8b031001
+        version_id: '1737625624941618'
