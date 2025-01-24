@@ -209,7 +209,22 @@ We agreed that it was good style to typehint functions, but as we changed them s
 >
 > Answer:
 
-We implemented 
+We have implemented (active) 7 tests; one that extensively tests the processed data, three which test our model and four tests which test the training process.
+
+The test on our processed data makes assertions on:
+* Object types with `isinstance()` (should match `TensorDataset`)
+* Shape and size mismatches as well as correct number of classes
+* All targets are present in both training and test datasets.
+
+The tests on our model make assertions on:
+* The model name and configuration
+* The shape of the output from the model
+* Device compatibility, i.e. that each parameter can be moved to the appropriate device
+
+The tests on the training process test that:
+* The gradients are updated and non-zero after an update
+* All relevant functions and external dependencies are correctly called during one epoch of training with the use of mocking.
+
 
 ### Question 8
 
@@ -224,7 +239,7 @@ We implemented
 >
 > Answer:
 
---- question 8 fill here ---
+We did not run coverage on the code, since we did not get the coverage package to work, neither locally nor with github actions. However, 
 
 ### Question 9
 
