@@ -34,13 +34,14 @@ from cleaninbox.data import text_dataset, tokenize_data
 from cleaninbox.monitoring.data_drift import data_drift
 from cleaninbox.evaluate import eval
 from cleaninbox.prediction import pred
+# from cleaninbox.data_drift import data_drift
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, reference_data, newdata_blob
+    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, hist_tracker, reference_data, newdata_blob, lifetime_error_counter
 
     # Initialize Hydra configuration
     with initialize(config_path="../../../configs", version_base="1.1"):
@@ -86,16 +87,21 @@ async def lifespan(app: FastAPI):
     # newdata blob for monitoring
     newdata_blob = bucket.blob(cfg.gs.monitoring_db)
 
+    # Prometheus metrics:
+    lifetime_error_counter = Counter("lifetime_errors", "Total number of application errors")
+    error_counter = Counter("errors", "Number of application errors", ["endpoint"]) # Remember to add labels to all errors
+    hist_tracker = Histogram("request_duration_seconds", "Request duration in seconds", ["endpoint"]) # Remember to add labels to all requests
+
     try:
         logger.info("Starting application...")
         yield
 
     finally:
         logger.info("Shutting down application...")
-        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, reference_data, error_counter
+        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, reference_data, error_counter, hist_tracker, lifetime_error_counter
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/metrics", make_asgi_app())
+app.mount("/metrics", make_asgi_app()) # Expose the application metrics at the mounted endpoint /metrics.
 
 @app.get("/")
 async def root():
@@ -124,7 +130,7 @@ async def read_file(file: UploadFile = File(...)):
 #     catch Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
 
-def retrieve_model(model_name: str):
+def retrieve_model(model_name: str) -> BertTypeClassification:
     """
     Retrieve a model from Google Cloud Storage.
 
@@ -148,7 +154,7 @@ def retrieve_model(model_name: str):
 
 
 @app.get("/download-pretrained-model/")
-def download_pretrained(model_name: str="model_current"):
+def download_pretrained(model_name: str="model_current") -> StreamingResponse:
     """
     Download a pretrained model from Google Cloud Storage.
 
@@ -172,11 +178,12 @@ def download_pretrained(model_name: str="model_current"):
         )
 
     except Exception as e:
-        error_counter.labels("download_pretrained_model").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_download_pretrained_model").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/download-banking-data/")
-def download_banking_data(raw: bool = False):
+def download_banking_data(raw: bool = False) -> StreamingResponse:
     """
     Download banking data to local machine from Google Cloud Storage.
 
@@ -206,11 +213,12 @@ def download_banking_data(raw: bool = False):
             )
 
     except Exception as e:
-        error_counter.labels("download_banking_data").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_download_banking_data").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/evaluate/")
-async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFile]=None, model_name: str="model_current"):
+async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFile]=None, model_name: str="model_current") -> dict:
     """
     Evaluate model performance on dataset.
 
@@ -220,6 +228,7 @@ async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFil
         model_name (str): Name of the model to evaluate.
     """
     try:
+        init = time.time()
 
         if texts and labels:
 
@@ -247,12 +256,19 @@ async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFil
         test_dataloader = torch.utils.data.DataLoader(data, batch_size=cfg.experiment.hyperparameters.batch_size)
 
         _model = retrieve_model(model_name)
+        start = time.time()
         correct, total, accuracy = eval(test_dataloader, _model, DEVICE)
+        end = time.time()
+
+        # Save metrics to Prometheus:
+        hist_tracker.labels("eval_time").observe(end - start)
+        hist_tracker.labels("eval_request_time").observe(end - init)
 
         return {"dataset": dataset_name, "correct": correct, "total": total, "accuracy": accuracy}
 
     except Exception as e:
-        error_counter.labels("evaluate").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_evaluate").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 # Prediction endpoint
@@ -262,25 +278,33 @@ class PredictRequest(BaseModel):
 
 @app.post("/predict/")
 async def predict(request: PredictRequest,
-                  background_tasks: BackgroundTasks):
+                  background_tasks: BackgroundTasks) -> dict:
     """
     Predict the label for a given prompt.
     """
     try:
+        init = time.time()
         prompt = request.prompt
         _model = retrieve_model(request.model_name)
         logger.info(f"Received prompt: {prompt}")
         start = time.time()
         prediction_result = pred(tokenizer, _model, prompt, label_names, DEVICE)
-        prediction_time = time.time() - start
+        end = time.time()
+
+        # Save metrics to Prometheus:
+        hist_tracker.labels("prediction_time").observe(end - start)
+        hist_tracker.labels("pred_request_time").observe(end - init)
+
         background_tasks.add_task(save_prediction_to_gcp,
                                   prompt,
                                   request.model_name,
                                   label_names.index(prediction_result['predicted_label']),
-                                  prediction_time)
+                                  end - start)
         return prediction_result
 
     except Exception as e:
+        lifetime_error_counter.inc()
+        error_counter.labels("err_predict").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/data-drift/", response_class=HTMLResponse)
@@ -301,7 +325,7 @@ async def data_drift():
 
 # Save prediction results to GCP
 def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, prediction_time: float):
-    """Save the prediction results to GCP bucket."""
+    """Save the prediction results to GCP bucket. Used for monitoring after deployment."""
 
     logger.info(f"Writing prediction to CSV file: {cfg.gs.monitoring_db}")
 
@@ -317,7 +341,7 @@ def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, predic
     logger.info(f"Data written to CSV file: {cfg.gs.monitoring_db}")
 
 async def run_data_drift_analysis(reference_data: pd.DataFrame, new_data: pd.DataFrame):
-    """Run the data drift analysis with Evidently and return report."""
+    """Run the data drift analysis with Evidently and return report. Used for monitoring after deployment."""
 
     logger.info("Running Evidently analysis...")
     report = Report(metrics=[DataDriftPreset(), TargetDriftPreset(), DataQualityPreset()])
