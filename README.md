@@ -1,7 +1,7 @@
 # Group98_MLOps
 Now unofficially an org!<br>
 Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.app)<br>
-
+(and for the nerds, our [backend](https://backend-170780472924.europe-west1.run.app) can be checked out)<br>
 *Adam Ledou, s204216*  <br>
 *Ludvik Petersen, s194613*  <br>
 *Martin Maximilian Ægidius, s194119*  <br>
