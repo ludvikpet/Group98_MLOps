@@ -44,11 +44,12 @@ if st.button("Generate report!",disabled=st.session_state.running,key="generate_
             response = requests.get(url=f"{backend_url}/data-drift/", timeout=120) #await handled in backend
             response.raise_for_status()
             st.success("Report generated successfully")
+            html_data = response.text
         except requests.RequestException as e:
             st.error("Failed to generate report: {e}")
-    html_data = load_html()
+    #html_data = load_html()
     if html_data:
-        st.components.v1.html(html_data, height=400, scrolling=True)
+        st.components.v1.html(html_data, height=550, scrolling=True)
         #path_to_html = "./monitoring/reports/report.html" 
 else:
     st.write("No report to display. Click the button the generate one!")
