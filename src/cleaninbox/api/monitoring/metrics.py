@@ -9,7 +9,7 @@ import requests
 
 st.set_page_config(page_title="Internal Metrics", page_icon="📈")
 
-with initialize(config_path="../configs", version_base="1.1"):
+with initialize(config_path="../../../configs", version_base="1.1"):
     cfg = compose(config_name="config")
     
 # Get metrics text:

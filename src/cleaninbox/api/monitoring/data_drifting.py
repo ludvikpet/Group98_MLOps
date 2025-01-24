@@ -10,7 +10,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Data drifting", page_icon="📈", layout="wide")
 
-with initialize(config_path="../configs", version_base="1.1"):
+with initialize(config_path="../../../configs", version_base="1.1"):
     cfg = compose(config_name="config")
 
 @st.cache_resource  

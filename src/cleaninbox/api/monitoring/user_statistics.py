@@ -12,7 +12,7 @@ st.set_page_config(page_title="User statistics", page_icon="📈")
 st.markdown("# User statistics")
 st.sidebar.header("User statistics")
 
-with initialize(config_path="./configs", version_base="1.1"):
+with initialize(config_path="../../../configs", version_base="1.1"):
     cfg = compose(config_name="config")
     
 # Get bucket and relevant blobs:
