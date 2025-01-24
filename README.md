@@ -1,6 +1,7 @@
 # Group98_MLOps
-Now an org!
-
+Now unofficially an org!<br>
+Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.app)<br>
+(and for the nerds, our [backend](https://backend-170780472924.europe-west1.run.app) can be checked out)<br>
 *Adam Ledou, s204216*  <br>
 *Ludvik Petersen, s194613*  <br>
 *Martin Maximilian Ægidius, s194119*  <br>
@@ -119,7 +120,7 @@ The directory structure of the project looks like this:
 * :x: _Use profiling to optimize your code (M12)_
 * :white_check_mark: Use logging to log important events in your code (M14)
 * :white_check_mark: Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-* :large_orange_diamond: Consider running a hyperparameter optimization sweep (M14)
+* :x: Consider running a hyperparameter optimization sweep (M14)
 * :x: _Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)_
 
 ### Week 2
@@ -131,34 +132,34 @@ The directory structure of the project looks like this:
 * :white_check_mark: Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
 * :x: _Add a linting step to your continuous integration (M17)_
 * :x: _Add pre-commit hooks to your version control setup (M18)_
-* :large_orange_diamond: Add a continuous workflow that triggers when data changes (M19)
-* :large_orange_diamond: Add a continuous workflow that triggers when changes to the model registry is made (M19)
+* :x: _Add a continuous workflow that triggers when data changes (M19)_
+* :x: _Add a continuous workflow that triggers when changes to the model registry is made (M19)_
 * :white_check_mark: Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
 * :white_check_mark: Create a trigger workflow for automatically building your docker images (M21)
 * :white_check_mark: Get your model training in GCP using either the Engine or Vertex AI (M21)
 * :white_check_mark: Create a FastAPI application that can do inference using your model (M22)
-* :large_orange_diamond: Deploy your model in GCP using either Functions or Run as the backend (M23)
+* :white_check_mark: Deploy your model in GCP using either Functions or Run as the backend (M23)
 * :x: _Write API tests for your application and setup continuous integration for these (M24)_
-* :large_orange_diamond: Load test your application (M24)
+* :x: _Load test your application (M24)_
 * :x: _Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)_
-* :large_orange_diamond: Create a frontend for your API (M26)
+* :white_check_mark: Create a frontend for your API (M26)
 
 ### Week 3
 
-* :large_orange_diamond: Check how robust your model is towards data drifting (M27)
-* :large_orange_diamond: Deploy to the cloud a drift detection API (M27)
-* :large_orange_diamond: Instrument your API with a couple of system metrics (M28)
-* :large_orange_diamond: Setup cloud monitoring of your instrumented application (M28)
-* :large_orange_diamond: Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+* :white_check_mark: Check how robust your model is towards data drifting (M27)
+* :white_check_mark: Deploy to the cloud a drift detection API (M27)
+* :white_check_mark: Instrument your API with a couple of system metrics (M28)
+* :white_check_mark: Setup cloud monitoring of your instrumented application (M28)
+* :x: _Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)_
 * :x: _If applicable, optimize the performance of your data loading using distributed data loading (M29)_
 * :x: _If applicable, optimize the performance of your training pipeline by using distributed training (M30)_
 * :x: _Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)_
 
 ### Extra
 
-* :large_orange_diamond: Write some documentation for your application (M32)
+* :x: _Write some documentation for your application (M32)_
 * :x: _Publish the documentation to GitHub Pages (M32)_
-* :large_orange_diamond: Revisit your initial project description. Did the project turn out as you wanted?
+* :white_check_mark: Revisit your initial project description. Did the project turn out as you wanted?
 * :x: _Create an architectural diagram over your MLOps pipeline_
 * :white_check_mark: Make sure all group members have an understanding about all parts of the project
 * :white_check_mark: Uploaded all your code to GitHub

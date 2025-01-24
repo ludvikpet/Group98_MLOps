@@ -4,7 +4,6 @@ from pydantic import BaseModel
 import requests
 import streamlit as st
 from hydra import initialize, compose
-from google.cloud import run_v2
 
 st.set_page_config(page_title="Cleaninbox", page_icon=":mailbox_with_no_mail:")
 
@@ -12,33 +11,15 @@ st.set_page_config(page_title="Cleaninbox", page_icon=":mailbox_with_no_mail:")
 # Prediction endpoint
 class PredictRequest(BaseModel):
     prompt: str
-    model_name: str = "model_current"
+    model_name: str
 
-with initialize(config_path="../../../../configs", version_base="1.1"):
+with initialize(config_path="../../../configs", version_base="1.1"):
     cfg = compose(config_name="config")
 
 @st.cache_resource  
 def get_backend_url():
     return cfg.gs.backend_url
 
-#@st.cache_resource  
-# def get_backend_url():
-#     """Get the URL of the service automatically."""
-#     projectID = "cleaninbox-448011"
-#     REGION = "europe-west1"
-#     parent = f"projects/{projectID}/locations/{REGION}"
-#     client = run_v2.ServicesClient()
-#     services = client.list_services(parent=parent)
-#     for service in services:
-#         if service.name.split("/")[-1] == "backend": #this check is probably wrong
-#             st.write(service.uri) #debugging
-#             return service.uri
-#     name = os.environ.get("BACKEND", None)
-#     st.write(name) #debugging
-#     return name
-
-#def get_backend_url():
-#    return "http://127.0.0.1:8000"
     
 def classify_email(request: PredictRequest, backend: str):
     """Send the email struct to the backend for classification."""
@@ -84,7 +65,8 @@ with st.expander("Model explanation"):
     modelDict = {"Model Name":["MediumFit","LargeFit","OverFit"],
                  "Size of training set": [4000,8000,1000],
                  "Batch-size during training": [64,16,64],
-                 "Dataset": ["PolyAI/banking77","PolyAI/banking77","PolyAI/banking77"]
+                 "Dataset": ["PolyAI/banking77","PolyAI/banking77","PolyAI/banking77"],
+                 "Aliases": ["Semifit4k","fullfit8k32b","model_current"]
                 }
     model_df = pd.DataFrame(data=modelDict)
     st.text("We provide three different model types, and you can choose which one you like:")
@@ -97,9 +79,10 @@ model_name_dict = {"LargeFit":"fullfit8k32b","MediumFit":"Semifit4k","OverFit":"
 if submit: 
     model_name_choice = model_name_dict[model_name]
     request = PredictRequest(prompt=email_string,model_name=model_name_choice)
+    st.write(request)
     if len(request.prompt)>0:
         with st.spinner("classifying... this could take time..."):
-            result = classify_email(request,backend=backend)
+            result = classify_email(request=request,backend=backend)
 
         if result is not None:
             prediction = result["predicted_label"]

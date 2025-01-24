@@ -31,8 +31,7 @@ gs:
   monitoring: "${gs.data}monitoring/"
   monitoring_ref_data: "${gs.monitoring}reference_data.pkl"
   monitoring_db: "${gs.monitoring}newdata_predictions_db.csv"
-  # backend_url: "https://backend-170780472924.europe-west1.run.app"
-  backend_url: "http://127.0.0.1:8000"
+  backend_url: "https://backend-170780472924.europe-west1.run.app"
 
 environment:
   log_wandb: True

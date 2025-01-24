@@ -141,7 +141,7 @@ def retrieve_model(model_name: str) -> BertTypeClassification:
         return model
 
     # Download model checkpoint and return model:
-    model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")
+    model_ckpt = bucket.get_blob(cfg.gs.model + "/" + model_name + ".pth")
     logger.info(f"Downloading model checkpoint: {model_ckpt.name}")
     file_data = model_ckpt.download_as_bytes()
     ckpt = io.BytesIO(file_data)
@@ -162,7 +162,7 @@ def download_pretrained(model_name: str="model_current") -> StreamingResponse:
     """
     try:
         # Download model checkpoint:
-        model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")
+        model_ckpt = bucket.get_blob(cfg.gs.model + "/" + model_name + ".pth")
         logger.info(f"Downloading model checkpoint: {model_ckpt.name}")
         file_data = model_ckpt.download_as_bytes()
         ckpt = io.BytesIO(file_data)
