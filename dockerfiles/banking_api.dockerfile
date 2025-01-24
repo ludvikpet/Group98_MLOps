@@ -5,6 +5,7 @@ RUN apt update && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app/src/cleaninbox
+RUN mkdir -p /app/reports
 WORKDIR /app
 
 # Add required source files:
@@ -24,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install -r /app/requirements_
 
 # Only used for local fast docker build:
 RUN --mount=type=cache,target=/root/.cache/pip pip install torch~=2.5.1 -i https://download.pytorch.org/whl/cpu
- 
+
 # Build the package:
 RUN pip install -e . --no-cache-dir --verbose
 

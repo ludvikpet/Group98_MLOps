@@ -48,6 +48,7 @@ def data_drift(cfg: DictConfig, bucket: Bucket = None) -> None:
     bucket.blob(f"{cfg.gs.monitoring}reports/report.html").upload_from_string(report_html.getvalue(), content_type='text/html')
     logger.info("Done running Evidently, report saved to GCS.")
 
+    return
   else:
 
     logger.info("Retrieving reference data and new data locally...")

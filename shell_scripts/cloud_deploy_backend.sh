@@ -11,7 +11,7 @@ export IMAGE_TAG="latest"
 
 
 # Build the Docker image
-docker build -f dockerfiles/banking_api.dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+docker buildx build --platform linux/amd64 -f dockerfiles/banking_api.dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
 
 # Tag the Docker image
 docker tag \

@@ -8,7 +8,6 @@ outputs/
 wandb/
 docs/site/
 models/*
-reports/*
 data/
 
 
