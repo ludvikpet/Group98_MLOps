@@ -380,7 +380,14 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following six Cloud services: Build Trigger, Artifact Registry, Vertex AI, Bucket, Secret Management and Run.
+
+Cloud Build Trigger: Automates the build process by triggering builds whenever changes are pushed to our GitHub repository.
+Artifact Registry: Stores and manages container images and other artifacts.
+Vertex AI: Provides a platform for training, deploying, and managing our model. 
+Bucket: A scalable and secure storage solution used to store and manage user statistics and data.
+Cloud Secret Manager: A service used to securely store and manage sensitive information like API keys, credentials, and other secrets.
+Cloud Run: A serverless platform that hosts and scales our FastAPI backend, handling prediction requests from the Streamlit frontend.
 
 ### Question 18
 
@@ -520,12 +527,11 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 > *costing the most was ... due to ... . Working in the cloud was ...*
 >
 > Answer:
-> We spent a total of $6 to train the model on Vetex AI, Inference on Cloud Run and storage on GCP.
+We spent a total of $6 to train the model on Vetex AI, Inference on Cloud Run and storage on GCP.
 
-> Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google Cloud Platform to identify which service was the most expensive. We suspect this might be due to running on credits.
+Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google Cloud Platform to identify which service was the most expensive. We suspect this might be due to running on credits.
 
-> As a group, we agreed that while Google Cloud offers powerful tools, its interface is not very user-friendly, and navigating the platform can be slow and frustrating. The terminal commands were easier to work with, but we encountered issues gaining access to GPUs, which was particularly inconvenient. Despite these challenges, there was a consensus that running the model was relatively inexpensive overall.
---- question 27 fill here ---
+As a group, we agreed that while Google Cloud offers powerful tools, its interface is not very user-friendly, and navigating the platform can be slow and frustrating. The terminal commands were easier to work with, but we encountered issues gaining access to GPUs, which was particularly inconvenient. Despite these challenges, there was a consensus that running the model was relatively inexpensive overall.
 
 ### Question 28
 
@@ -557,13 +563,12 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 > *Whenever we commit code and push to GitHub, it auto triggers ... and ... . From there the diagram shows ...*
 >
 > Answer:
-> The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
-> 
-> Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
->
->  For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
+The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
+ 
+Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
+
+For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
 ![my_image](figures/MLops_Project_Diagram.png)
---- question 29 fill here ---
 
 ### Question 30
 
@@ -585,7 +590,6 @@ Google Cloud, Docker deployment API, Hydra, Weight and Biases
 In terms of Docker API deployment, we faced issues with traffic management, open ports, and unhelpful output logs, which provided little debugging insight. The lack of support from exercise files or online resources made troubleshooting more difficult. Additionally, debugging was time-consuming due to the long boot times of the Docker image, slowing down iterations and testing.
 
 We also struggled with Google Cloud, as it is not very user-friendly. Identifying which service account was building was confusing, and we were never granted access to use GPUs on Vertex AI. Additionally, when Cloud Run failed, no logs were provided, making debugging extremely difficult and frustrating. These issues added significant challenges to the workflow.
---- question 30 fill here ---
 
 ### Question 31
 
