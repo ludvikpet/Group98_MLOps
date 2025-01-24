@@ -13,8 +13,7 @@ COPY src/cleaninbox/api/multipagefrontend.py /app/multipagefrontend.py
 COPY src/cleaninbox/api/welcome.py /app/welcome.py
 COPY src/cleaninbox/api/monitoring/data_drifting.py /app/monitoring/data_drifting.py
 COPY src/cleaninbox/api/monitoring/user_statistics.py /app/monitoring/user_statistics.py
-
-#COPY src/cleaninbox/api/monitoring/reports/report.html /app/monitoring/reports/report.html
+COPY src/cleaninbox/api/monitoring/metrics.py /app/monitoring/metrics.py
 COPY src/cleaninbox/api/prediction/predict.py /app/prediction/predict.py
 
 
