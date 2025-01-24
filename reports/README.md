@@ -383,10 +383,15 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 We used the following six Cloud services: Build Trigger, Artifact Registry, Vertex AI, Bucket, Secret Management and Run.
 
 Cloud Build Trigger: Automates the build process by triggering builds whenever changes are pushed to our GitHub repository.
+
 Artifact Registry: Stores and manages container images and other artifacts.
+
 Vertex AI: Provides a platform for training, deploying, and managing our model. 
+
 Bucket: A scalable and secure storage solution used to store and manage user statistics and data.
+
 Cloud Secret Manager: A service used to securely store and manage sensitive information like API keys, credentials, and other secrets.
+
 Cloud Run: A serverless platform that hosts and scales our FastAPI backend, handling prediction requests from the Streamlit frontend.
 
 ### Question 18
