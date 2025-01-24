@@ -29,14 +29,14 @@ from cleaninbox.model import BertTypeClassification  # Ensure this points to the
 from cleaninbox.data import text_dataset, tokenize_data
 from cleaninbox.evaluate import eval
 from cleaninbox.prediction import pred
-from cleaninbox.data_drift import data_drift
+# from cleaninbox.data_drift import data_drift
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, hist_tracker, newdata_blob
+    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, hist_tracker, newdata_blob, lifetime_error_counter
 
     # Initialize Hydra configuration
     with initialize(config_path="../../../configs", version_base="1.1"):
@@ -75,6 +75,7 @@ async def lifespan(app: FastAPI):
     newdata_blob = bucket.blob(cfg.gs.monitoring_db)
 
     # Prometheus metrics:
+    lifetime_error_counter = Counter("lifetime_errors", "Total number of application errors")
     error_counter = Counter("errors", "Number of application errors", ["endpoint"]) # Remember to add labels to all errors
     hist_tracker = Histogram("request_duration_seconds", "Request duration in seconds", ["endpoint"]) # Remember to add labels to all requests
 
@@ -84,10 +85,10 @@ async def lifespan(app: FastAPI):
 
     finally:
         logger.info("Shutting down application...")
-        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, error_counter, hist_tracker
+        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, error_counter, hist_tracker, lifetime_error_counter
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/metrics", make_asgi_app())
+app.mount("/metrics", make_asgi_app()) # Expose the application metrics at the mounted endpoint /metrics.
 
 @app.get("/")
 async def root():
@@ -164,7 +165,8 @@ def download_pretrained(model_name: str="model_current") -> StreamingResponse:
         )
 
     except Exception as e:
-        error_counter.labels("download_pretrained_model").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_download_pretrained_model").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/download-banking-data/")
@@ -198,7 +200,8 @@ def download_banking_data(raw: bool = False) -> StreamingResponse:
             )
 
     except Exception as e:
-        error_counter.labels("download_banking_data").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_download_banking_data").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/evaluate/")
@@ -251,7 +254,8 @@ async def eval_data(texts: Optional[UploadFile]=None, labels: Optional[UploadFil
         return {"dataset": dataset_name, "correct": correct, "total": total, "accuracy": accuracy}
 
     except Exception as e:
-        error_counter.labels("evaluate").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_evaluate").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 # Prediction endpoint
@@ -283,23 +287,25 @@ async def predict(request: PredictRequest,
         return prediction_result
 
     except Exception as e:
-        error_counter.labels("predict").inc()
+        lifetime_error_counter.inc()
+        error_counter.labels("err_predict").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/report/")
-def get_report() -> None:
-    """
-    Get the Evidently report for the model.
-    """
-    try:
-        init = time.time()
-        drift_report = data_drift(test_data, model, tokenizer, label_names, DEVICE)
-        hist_tracker.labels("report_time").observe(time.time() - init)
-        return drift_report
+# @app.get("/report/")
+# def get_report() -> None:
+#     """
+#     Get the Evidently report for the model.
+#     """
+#     try:
+#         init = time.time()
+#         drift_report = data_drift(test_data, model, tokenizer, label_names, DEVICE)
+#         hist_tracker.labels("report_time").observe(time.time() - init)
+#         return drift_report
     
-    except Exception as e:
-        error_counter.labels("get_report").inc()
-        raise HTTPException(status_code=500, detail=str(e))
+#     except Exception as e:
+#         total_error_counter.inc()
+#         error_counter.labels("err_get_report").inc()
+#         raise HTTPException(status_code=500, detail=str(e))
 
 def test_add_to_local_db(
     prompt: str,
@@ -330,6 +336,8 @@ def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, predic
         logger.info(f"Data written to CSV file: {cfg.gs.monitoring_db}")
 
     except Exception as e:
+        lifetime_error_counter.inc()
+        error_counter.labels("err_save_prediction").inc()
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

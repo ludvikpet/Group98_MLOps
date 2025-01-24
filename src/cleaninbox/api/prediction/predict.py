@@ -3,6 +3,7 @@ import pandas as pd
 from pydantic import BaseModel
 import requests
 import streamlit as st
+from hydra import initialize, compose
 from google.cloud import run_v2
 
 st.set_page_config(page_title="Cleaninbox", page_icon=":mailbox_with_no_mail:")
@@ -12,9 +13,12 @@ st.set_page_config(page_title="Cleaninbox", page_icon=":mailbox_with_no_mail:")
 class PredictRequest(BaseModel):
     prompt: str
 
+with initialize(config_path="../../../../configs", version_base="1.1"):
+    cfg = compose(config_name="config")
+
 @st.cache_resource  
 def get_backend_url():
-    return "https://backend-170780472924.europe-west1.run.app"
+    return cfg.gs.backend_url
 
 #@st.cache_resource  
 # def get_backend_url():
