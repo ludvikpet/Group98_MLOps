@@ -160,7 +160,7 @@ We used huggingface, more specifically the transformers and datasets packages. W
 >
 > Answer:
 
-In general we used pipreqs to generate dependencies, but it was quite bad for our packages (often not including them). Thus, in the end, we used a combination of pipreqs for automatic generation and followingly manually added packages to the requirements. We have dependencies for our package (cleaninbox), backend, and frontend. We used conda environments with local pip installment for downloading dependencies. The pyproject.toml file was used for making cleaninbox installable. Thus, the normal workflow was: conda activate venv -> pip install the current requirements you need for working on your part -> pip install . -e (for the cleaninbox package installation).
+In general we used pipreqs to generate dependencies, but it was quite bad for our packages (often not including them). Thus, in the end, we used a combination of pipreqs for automatic generation and followingly manually added packages to the requirements text file. We have dependencies for our package (cleaninbox), backend, and frontend. We used conda environments with local pip installment for downloading dependencies. The pyproject.toml file was used for making cleaninbox installable. Thus, the normal workflow was: conda activate venv -> pip install the current requirements you need for working on your part -> pip install . -e (for the cleaninbox package installation).
 
 ### Question 5
 
