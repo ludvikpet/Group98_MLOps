@@ -650,10 +650,10 @@ We also struggled with Google Cloud, as it is not very user-friendly. Identifyin
 
 Overall, we all contributed to most parts of the process by supporting each other with debugging and integrating the workflow. However, our main contributions to specific areas can be summarized as follows:
 
-s194119: Cloud Artifact, Vertex AI, GCP Bucket, FrontEnd
+s194119: Cloud Artifact, Vertex AI, GCP Bucket, FrontEnd, Train Model.
 
-s194613: Backend, FastAPI, CloudRun, DVC
+s194613: Backend, FastAPI, CloudRun, DVC, Build Model for fine tuning.
 
-s204216: Unittesting, Github Actions, Evidently AI (Monitoring)
+s204216: Unittesting, Github Actions, Evidently AI (Monitoring), Process Data.
 
-s204227: Github Setup, Huggingface, WandB, Diagram
+s204227: Github Setup, Huggingface, WandB, Structure Diagram
