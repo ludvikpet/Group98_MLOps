@@ -412,10 +412,15 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 We used the following six Cloud services: Build Trigger, Artifact Registry, Vertex AI, Bucket, Secret Management and Run.
 
 Cloud Build Trigger: Automates the build process by triggering builds whenever changes are pushed to our GitHub repository.
+
 Artifact Registry: Stores and manages container images and other artifacts.
+
 Vertex AI: Provides a platform for training, deploying, and managing our model. 
+
 Bucket: A scalable and secure storage solution used to store and manage user statistics and data.
+
 Cloud Secret Manager: A service used to securely store and manage sensitive information like API keys, credentials, and other secrets.
+
 Cloud Run: A serverless platform that hosts and scales our FastAPI backend, handling prediction requests from the Streamlit frontend.
 
 ### Question 18
@@ -596,6 +601,7 @@ We implemented a frontend using `streamlit` which is linked in the github repo r
 > *Whenever we commit code and push to GitHub, it auto triggers ... and ... . From there the diagram shows ...*
 >
 > Answer:
+
 The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
  
 Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
