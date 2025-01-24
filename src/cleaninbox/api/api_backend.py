@@ -89,7 +89,7 @@ async def lifespan(app: FastAPI):
 
     # Prometheus metrics:
     lifetime_error_counter = Counter("lifetime_errors", "Total number of application errors")
-    error_counter = Counter("errors", "Number of application errors", ["endpoint"]) # Remember to add labels to all errors
+    error_counter = Counter("function_errors", "Number of application errors", ["endpoint"]) # Remember to add labels to all errors
     hist_tracker = Histogram("request_duration_seconds", "Request duration in seconds", ["endpoint"]) # Remember to add labels to all requests
 
     try:
