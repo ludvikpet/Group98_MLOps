@@ -15,6 +15,7 @@ COPY src/cleaninbox/api/monitoring/data_drifting.py /app/monitoring/data_driftin
 COPY src/cleaninbox/api/monitoring/user_statistics.py /app/monitoring/user_statistics.py
 COPY src/cleaninbox/api/monitoring/metrics.py /app/monitoring/metrics.py
 COPY src/cleaninbox/api/prediction/predict.py /app/prediction/predict.py
+COPY configs/ /app/configs/
 
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_frontend.txt
