@@ -313,7 +313,8 @@ Here is a link to an example of workflow when triggered:
 >
 > Answer:
 
-We use configurations with Hydra extensively in our project. This also includes experimentation with sub-configs such as sub-configs for different experiments as to ensure reproducibility.
+We use configurations with Hydra extensively in our project. This also includes experimentation with sub-configs such as sub-configs for different experiments as to ensure reproducibility. We use a default experimental config which we override with hydra arguments for experiments which diverge, e.g. "python src/cleaninbox/train.py ++experiment.hyperparameters.batch_size=8" for a smaller batch-size than the default 64. We considered doing a sweep, but the model fit so well out of the box that much experimentation was not needed. We also use configs to enable the possibility of using different model types, datasets, etc. Unittests are also based on defaults given in the configs. 
+
 
 ### Question 13
 
@@ -328,7 +329,8 @@ We use configurations with Hydra extensively in our project. This also includes 
 >
 > Answer:
 
---- question 13 fill here ---
+We seed EVERYTHING. We log all runs to wandb (losses, etc. but also parameter values, seed, and save the parameter values to the registry). In addition, we log all configurations for the train-job which are saved in gcp. In this way, we are doubly sure that the correct parameters have been logged in both services, and thus we exactly know which parameters were used. In order to re-do an experiment, one would simply write a new experimental config in experiments and point to this as the default experiments config in the super-config.
+
 
 ### Question 14
 
