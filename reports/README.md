@@ -514,7 +514,7 @@ we wrote an API using fastAPI, paired with a frontend with streamlit. The API is
 >
 > Answer:
 
-The API is deployed in the cloud. We started out by running locally, but sooner progressed to hosting them as a cloud run service, such that our girlfriends can see what we spent our time in January on instead of being with them. During local development, we debugged using curl commands and fastAPIs swaggerUI, which made it way easier. Both APIs are docker containers, and they load data/models from cloud buckets. Building these proved tiresome, so we implemented build and deployment scripts (can be seen in shell_scripts/). 
+The API is deployed in the cloud. We started out by running locally, but sooner progressed to hosting them as a cloud run service, such that our girlfriends can see what we spent our time in January on instead of being with them. During local development, we debugged using curl commands and fastAPIs swaggerUI, which made it way easier. Both APIs are docker containers, and they load data/models from cloud buckets. Building these proved tiresome, so we implemented build and deployment scripts (can be seen in shell_scripts/). Some functions unfortunately don't work on the deployed backend, retrieved at: [backend](https://backend-170780472924.europe-west1.run.app), however, invoking it locally using the command `uvicorn --reload cleaninbox.api.api_backend:app` and running e.g. `curl -X 'POST' 'http://localhost:8000/evaluate/'` should execute successfully. In general, we run the service using the frontend API, which can be accessed simply by clicking here: [frontend](https://email-api-frontend-170780472924.europe-west1.run.app/).
 
 ### Question 25
 
