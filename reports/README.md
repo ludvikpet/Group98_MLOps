@@ -403,7 +403,7 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 > **You can take inspiration from [this figure](figures/bucket.png).**
 >
 > Answer:
-
+![my_image](figures/GCP_Bucket.png)
 --- question 19 fill here ---
 
 ### Question 20
@@ -412,6 +412,7 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 > **stored. You can take inspiration from [this figure](figures/registry.png).**
 >
 > Answer:
+![my_image](figures/Artifact_Registry.png)
 
 --- question 20 fill here ---
 
@@ -421,6 +422,7 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 > **your project. You can take inspiration from [this figure](figures/build.png).**
 >
 > Answer:
+![my_image](figures/Cloud_build_history.png)
 
 --- question 21 fill here ---
 
@@ -518,7 +520,11 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 > *costing the most was ... due to ... . Working in the cloud was ...*
 >
 > Answer:
+> We spent a total of $6 to train the model on Vetex AI, Inference on Cloud Run and storage on GCP.
 
+> Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google Cloud Platform to identify which service was the most expensive. We suspect this might be due to running on credits.
+
+> As a group, we agreed that while Google Cloud offers powerful tools, its interface is not very user-friendly, and navigating the platform can be slow and frustrating. The terminal commands were easier to work with, but we encountered issues gaining access to GPUs, which was particularly inconvenient. Despite these challenges, there was a consensus that running the model was relatively inexpensive overall.
 --- question 27 fill here ---
 
 ### Question 28
