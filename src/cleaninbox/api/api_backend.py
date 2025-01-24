@@ -291,7 +291,7 @@ async def data_drift():
 
         await run_data_drift_analysis(reference_data, newdata)
 
-        async with await anyio.open_file("report.html", encoding="utf-8") as f:
+        async with await anyio.open_file("reports/report.html", encoding="utf-8") as f:
             html_content = await f.read()
 
         return HTMLResponse(content=html_content, status_code=200)
@@ -322,7 +322,7 @@ async def run_data_drift_analysis(reference_data: pd.DataFrame, new_data: pd.Dat
     logger.info("Running Evidently analysis...")
     report = Report(metrics=[DataDriftPreset(), TargetDriftPreset(), DataQualityPreset()])
     report.run(reference_data=reference_data, current_data=new_data)
-    report.save("report.html")
+    report.save("reports/report.html")
 
     logger.info("Done running Evidently, report saved to GCS.")
 
