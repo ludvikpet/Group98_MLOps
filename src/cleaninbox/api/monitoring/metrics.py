@@ -86,9 +86,9 @@ def load_metrics_to_html():
         st.write("No errors have occured during deployment.")
     else:
         if len(errors) > 1:
+            st.write("Overview over the set of errors for our application throughout deployment. The bar-chart describes both the total number of errors for all API functions, but also errors for each individual function. The x-axis represents the different errors, while the y-axis represents the number of times the error has occured. For transparency, the number of errors are listed beneath the chart!")
             error_df = pd.DataFrame(errors, columns=["Error", "Count"])
             st.bar_chart(error_df.set_index("Error"))
-            st.write("Above, you'll find a table with the different errors that have occured throughout deployment. The x-axis represents the different errors, while the y-axis represents the number of times the error has occured. For transparency, the number of errors are listed below:")
 
         st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
         for key, value in errors:
@@ -99,7 +99,7 @@ def load_metrics_to_html():
     if not hists:
         st.write("No requests have been recorded during deployment.")
     else:
-        st.write("Below, you'll find a set of histograms that describe the duration of different user requests.")
+        st.write("Below, you'll find a set of histograms that describe the duration of different user requests, their total call counts as well as statistics for the sum of request durations.")
 
         for endpoint, hist in hists.items():
             st.markdown(f"### {endpoint}")
@@ -130,7 +130,7 @@ def trigger_reload():
     st.experimental_set_query_params(reload=True)
 
 st.markdown("# Internal Application Metrics")
-st.text("Below, you'll find different metrics that describe internal application behavior.")
+st.text("Below, you'll find different metrics that describe internal application behavior. These are primarily used for debugging and monitoring purposes, however, here they are for your viewing pleasure!")
 st.sidebar.header("Metrics")
 
 # Button to reload metrics
