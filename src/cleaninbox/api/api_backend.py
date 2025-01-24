@@ -31,7 +31,7 @@ from evidently.metric_preset import DataDriftPreset, DataQualityPreset, TargetDr
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
 from cleaninbox.data import text_dataset, tokenize_data
-from cleaninbox.monitoring.data_drift import data_drift
+
 from cleaninbox.evaluate import eval
 from cleaninbox.prediction import pred
 # from cleaninbox.data_drift import data_drift
@@ -346,7 +346,7 @@ async def run_data_drift_analysis(reference_data: pd.DataFrame, new_data: pd.Dat
     logger.info("Running Evidently analysis...")
     report = Report(metrics=[DataDriftPreset(), TargetDriftPreset(), DataQualityPreset()])
     report.run(reference_data=reference_data, current_data=new_data)
-    report.save("reports/report.html")
+    report.save_html("reports/report.html")
 
     logger.info("Done running Evidently, report saved to GCS.")
 
