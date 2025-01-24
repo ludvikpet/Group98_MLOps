@@ -209,7 +209,22 @@ We agreed that it was good style to typehint functions, but as we changed them s
 >
 > Answer:
 
-We implemented 
+We have implemented (active) 7 tests; one that extensively tests the processed data, three which test our model and four tests which test the training process.
+
+The test on our processed data makes assertions on:
+* Object types with `isinstance()` (should match `TensorDataset`)
+* Shape and size mismatches as well as correct number of classes
+* All targets are present in both training and test datasets.
+
+The tests on our model make assertions on:
+* The model name and configuration
+* The shape of the output from the model
+* Device compatibility, i.e. that each parameter can be moved to the appropriate device
+
+The tests on the training process test that:
+* The gradients are updated and non-zero after an update
+* All relevant functions and external dependencies are correctly called during one epoch of training with the use of mocking.
+
 
 ### Question 8
 
@@ -224,7 +239,10 @@ We implemented
 >
 > Answer:
 
---- question 8 fill here ---
+We did not run coverage on the code, since we did not get the coverage package to work, neither locally nor with github actions. However we would expect a relatively low coverage, since there are numerous modules of our code that we did not implement tests for, as is the case for the any api functionality, monitoring or evaluation to name a few. 
+
+If we had hypothetically gotten a code coverage of close to 100%, we would still not naively trust our code to be error free, since coverage does not completely ensure that the code has no errors. There may still be code that hasn't been run or tested with our tests, albeit corner cases. On the other hand, a high coverage still tells us that large parts of the code have been tested.
+
 
 ### Question 9
 
@@ -239,7 +257,9 @@ We implemented
 >
 > Answer:
 
---- question 9 fill here ---
+We did use branches in our workflow, where each feature to be added was developed and experimented with on a separate branch dedicated to the feature. We made use of frequent commits to ensure transparency and clarity in our work. Once work was done on the feature, we first tested the feature locally, if applicable, on the feature branch, then we merged the main branch into the feature branch and resolved any merge conflicts. Finally we would merge the feature branch into the main branch.
+
+We did not make much use of pull requests, but they are indeed helpful because they ensure that code that are to merged into main must be tested and reviewed before eventual merges. If the project had been even bigger and featured more people, pull requests would have been good integrate further into the workflow.
 
 ### Question 10
 
@@ -254,7 +274,7 @@ We implemented
 >
 > Answer:
 
---- question 10 fill here ---
+We used DVC for managing the data, and integrated it with remote storage in a Google Cloud Storage Bucket. This was beneficial in the way it allowed us to store the data in the cloud and control different versions of the data at the same time. However, there wasn't much need for version controlling the data in our project, since data, in our case, was fairly static. In an environment where data is subject to change often, or many people are managing the data at the same time, version control would be crucial to include.
 
 ### Question 11
 
@@ -271,7 +291,11 @@ We implemented
 >
 > Answer:
 
---- question 11 fill here ---
+Our project features continuous integration with a unit tests workflow, which is set up with GitHub Actions. The workflow only runs upon pushes and pull requests to main. It tests on both ubuntu, windows and mac operating systems. We use caching with pip and only one Python version (3.11). Additionally our workflow was authenticated with Google Cloud to get data with dvc. We could further
+Here is a link to a workflow with our unit tests.
+<https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/.github/workflows/tests.yaml>
+Here is a link to an example of workflow when triggered:
+<https://github.com/dtumlops-group98-org/Group98_MLOps/actions/runs/12930875830>
 
 ## Running code and tracking experiments
 
@@ -290,7 +314,7 @@ We implemented
 >
 > Answer:
 
---- question 12 fill here ---
+We use configurations with Hydra extensively in our project. This also includes experimentation with sub-configs such as sub-configs for different experiments as to ensure reproducibility. 
 
 ### Question 13
 
@@ -322,7 +346,12 @@ We implemented
 >
 > Answer:
 
---- question 14 fill here ---
+We used W&B for experiment tracking, and as seen from the three figures, we track training loss (figure 1), training accuracy (figure 2) and training predictions (figure 3). We are tracking training loss to make sure that our model acutally learns patterns from the data during training. When the training loss decreases as it does in this case, we can ascertain that our model improves when trained. We correspondingly track training accuracy to get a measure of how well our model performs.
+We also log training predictions with W&B to possibly capture which classes are more difficult to predict. The type of plot we use could certainly be further developed to be more informative or quantize it differently for more efficient analysis of model weaknesses, but that is the idea of it.
+We did not set up W&B for hyperparameter sweeps, but as we can see from the training performance, the model ends up being quite good. Hence we simply did not prioritize combining Hydra, W&B and VertexAI with the given time frame to enable sweeping.
+![Fig. 1: Training loss from W&B](figures/wandb_trainloss_batch_size-64_epochs-40_lr-1e-4_num_samples-4000_seed-42.png)
+![Fig. 2: Training loss from W&B](figures/wandb_trainacc_batch_size-64_epochs-40_lr-1e-4_num_samples-4000_seed-42.png)
+![Fig. 3: Training loss from W&B](figures/wandb_trainpred_batch_size-64_epochs-40_lr-1e-4_num_samples-4000_seed-42.png)
 
 ### Question 15
 
@@ -499,7 +528,11 @@ Cloud Run: A serverless platform that hosts and scales our FastAPI backend, hand
 >
 > Answer:
 
---- question 25 fill here ---
+We did perform unit tests and load tests of our API. We spent quite a bit of time getting unit tests to work with GitHub actions for testing our training process, especially in terms of getting the workflow to work with dvc and google cloud. Hence we did not proceed with implementations of unit tests and load tests for our API. 
+
+If we were to set up unit tests for our API, we would test the expected output for a given input to assess whether the API works as intended. For example our predict end-point expects a .json input and should return a dictionary. We could assert that an arbitrary .json input correctly returns a dictionary of predicted targets and associated probabilities. We could also implement unit tests for our monitoring functionality, that should ensure that new requests are correctly written to the .csv file 
+
+In terms of load testing, we could use the `locust` framework to test how heavy a load, our API could handle. This would involve simulating a number of users in a small time window, and monitoring if and when our API crashes. 
 
 ### Question 26
 
@@ -554,7 +587,7 @@ As a group, we agreed that while Google Cloud offers powerful tools, its interfa
 >
 > Answer:
 
-We implemented a frontend using streamlit which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using evidently, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using promotheus. 
+We implemented a frontend using `streamlit` which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using `evidently`, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using `promotheus`. 
 
 ### Question 29
 
