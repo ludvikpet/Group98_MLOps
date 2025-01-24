@@ -5,6 +5,10 @@ outs:
   - relpath: monitoring/newdata_predictions_db.csv
     md5: 5573ff640eea9ee04b450fcd245538f2
     size: 129
+    cloud:
+      remote_storage:
+        etag: 08e6e4abee918e8b031001
+        version_id: '1737714203030118'
   - relpath: processed/banking77/label_strings.json
     md5: 7d9658f2e1615bf12f08cbce6e3feb78
     size: 2331
