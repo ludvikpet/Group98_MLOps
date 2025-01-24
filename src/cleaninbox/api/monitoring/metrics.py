@@ -55,8 +55,15 @@ def parse_metrics(metrics_text: str, metric_names: list):
 
         if any(name in line for name in metric_names) and not line.startswith("#"):
             
-            if "le=" in line:
-                parse_histogram(line, hists)
+            if "request" in line:
+                hists = parse_histogram(line, hists)
+                continue
+            
+            elif line.startswith("lifetime_errors_total"):
+                st.write(f"In lifetime_errors_total with line: {line}")
+                key, value = line.split(" ")[0], float(line.split(" ")[1])
+                st.write(f"Stripped line: {key}, {value}")
+                errors.append((key, value))
                 continue
 
             st.write(f"In errors_total with line: {line}")
@@ -64,14 +71,8 @@ def parse_metrics(metrics_text: str, metric_names: list):
             value = float(line.split("}")[1].strip())
             st.write(f"Stripped line: {key}, {value}")
             errors.append((key, value))
-
-        elif line.startswith("lifetime_errors_total"):
-            st.write(f"In lifetime_errors_total with line: {line}")
-            key, value = line.split(" ")[0], float(line.split(" ")[1])
-            st.write(f"Stripped line: {key}, {value}")
-            errors.append((key, value))
     
-    return errors
+    return errors, hists
 
 def load_metrics_to_html():
     # Backend connection:
@@ -92,18 +93,17 @@ def load_metrics_to_html():
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("## Request duration")
-    
-    # Prepare bucket data:
-    bucket_data = {k: v for k, v in hists.items() if k not in ["_count", "_sum"]}
-    bucket_labels = list(bucket_data.keys())
-    bucket_values = list(bucket_data.values())
-    bucket_df = pd.DataFrame(bucket_values, index=bucket_labels)
-    st.bar_chart(bucket_df)
+    st.write("Below, you'll find a set of histograms that describe the duration of different user requests.")
 
-    
-
-
+    for endpoint, hist in hists.items():
+        st.markdown(f"### {endpoint}")
         
+        # Prepare bucket data:
+        bucket_data = {k: v for k, v in hist.items() if k not in ["_count", "_sum"]}
+        bucket_labels = list(bucket_data.keys())
+        bucket_values = list(bucket_data.values())
+        bucket_df = pd.DataFrame(bucket_values, index=bucket_labels)
+        st.bar_chart(bucket_df)
 
 # Base page:
 st.markdown("# Internal Application Metrics")
