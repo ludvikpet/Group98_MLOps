@@ -84,7 +84,8 @@ with st.expander("Model explanation"):
     modelDict = {"Model Name":["MediumFit","LargeFit","OverFit"],
                  "Size of training set": [4000,8000,1000],
                  "Batch-size during training": [64,16,64],
-                 "Dataset": ["PolyAI/banking77","PolyAI/banking77","PolyAI/banking77"]
+                 "Dataset": ["PolyAI/banking77","PolyAI/banking77","PolyAI/banking77"],
+                 "Aliases": ["Semifit4k","fullfit8k32b","model_current"]
                 }
     model_df = pd.DataFrame(data=modelDict)
     st.text("We provide three different model types, and you can choose which one you like:")
