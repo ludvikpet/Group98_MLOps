@@ -377,7 +377,7 @@ gcloud run deploy backend \
     --memory=2.0G
 ```
 
-where all variables prefixed by '$' are pre-defined environment variables, which can be found [here](https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/shell_scripts/cloud_deploy_backend.sh). An example of a dockerfile we've created can be found here
+where all variables prefixed by '$' are pre-defined environment variables, which can be found here: [shell script](https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/shell_scripts/cloud_deploy_backend.sh). An example of a dockerfile we've created can be found here: [dockerfile](https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/dockerfiles/backend.dockerfile).
 
 ### Question 16
 
@@ -392,7 +392,7 @@ where all variables prefixed by '$' are pre-defined environment variables, which
 >
 > Answer:
 
---- question 16 fill here ---
+We used different measures to counteract bugs throughout our project. We tried to use the debugger when we saw fit, which was used e.g. when developing our data and training scripts, which definitely sped-up the debugging process. We found later on down the pipeline, that it was easier to just resort to simple logging debugging, e.g. when testing our API locally. For such cases, we mainly used *loguru*, which was especially neat given its formatting capabilities, as well as streamlit writes when testing our frontend. We didn't do any profiling, as we didn't see the need in it, as our code behaved as we had expected and only the training loop offered as a bottleneck for our code. We could have ran a profiler to see if we could make some steps more efficient, e.g. by testing performance differences between single-threaded and distributed training, however, we chose to spend our time doing other tasks, down-prioritizing the model.
 
 ## Working in the cloud
 
@@ -549,7 +549,9 @@ In terms of load testing, we could use the `locust` framework to test how heavy 
 >
 > Answer:
 
---- question 26 fill here ---
+We did manage to implement monitoring for our model! We utilized both the *evidently*- and the *prometheus* framework for this. Our application monitors *data drift*, *target drift* and *data quality* for ML specific monitoring, as well as classic DevOps monitoring on *application error counts* and *request call diagnostics*. The ML specific monitoring is done by loading our reference data as well as the new data from a GCS bucket, from which we utilize the *evidently* framework to create a report that encompasses the three specified monitoring areas. DevOps monitoring is mounted onto our backend API, which then listens to user input. For each request, it observes the time it takes to finish the whole request, as well as sub-events such as the exclusive time it takes to run a prediction whilst excluding model-fetching.
+
+Currently, our diagnostics don't tell us anything, given the low lifetime throughput of our application, however, given time, we would expect to be able to gain great insights from these features.
 
 ## Overall discussion of project
 
@@ -648,15 +650,12 @@ We also struggled with Google Cloud, as it is not very user-friendly. Identifyin
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-fewafewubaofewnafioewnifowf ewafw afew afewafewafionewoanf waf ewonfieownaf fewnaiof newio fweanøf wea fewa
- fweafewa fewiagonwa ognwra'g
- wa
- gwreapig ipweroang w rag
- wa grwa
-  g
-  ew
-  gwea g
-  ew ag ioreabnguorwa bg̈́aw
-   wa
-   gew4igioera giroeahgi0wra gwa
+Overall, we all contributed to most parts of the process by supporting each other with debugging and integrating the workflow. However, our main contributions to specific areas can be summarized as follows:
 
+s194119: Cloud Artifact, Vertex AI, GCP Bucket, FrontEnd, Train Model.
+
+s194613: Backend, FastAPI, CloudRun, DVC, Build Model for fine tuning.
+
+s204216: Unittesting, Github Actions, Evidently AI (Monitoring), Process Data.
+
+s204227: Github Setup, Huggingface, WandB, Structure Diagram
