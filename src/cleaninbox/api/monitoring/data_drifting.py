@@ -9,9 +9,14 @@ import streamlit as st
 
 
 st.set_page_config(page_title="Data drifting", page_icon="📈", layout="wide")
+
+with initialize(config_path="../configs", version_base="1.1"):
+    cfg = compose(config_name="config")
+
 @st.cache_resource  
 def get_backend_url():
-    return "https://backend-170780472924.europe-west1.run.app" #hard-coded, this is bad code :) 
+    return cfg.gs.backend_url
+
 
 st.markdown("# Data drifting monitoring")
 st.sidebar.header("Data drifting monitoring")
