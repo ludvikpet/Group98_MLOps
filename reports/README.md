@@ -337,7 +337,18 @@ We implemented
 >
 > Answer:
 
---- question 15 fill here ---
+We used docker for two causes: training and deployment. Although training was also done locally, for larger training runs, we felt the need of exporting resource allocation instead of needing to run the model overnight and leaving one of our PCs idling away. For Cloud Deployment, we developed two images: one for our backend API and one for our frontend API, which was especially important, as this enabled us to create a service that outside users may engage with. For all docker usages, we configured shell scripts that would allow us to build and deploy containers seemlessly. To run the backend docker image, we'd run:
+
+```bash
+gcloud run deploy backend \
+    --image=$LOCATION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$IMAGE_NAME:$IMAGE_TAG \
+    --region=$LOCATION \
+    --platform=managed \
+    --timeout=300s \
+    --memory=2.0G
+```
+
+where all variables prefixed by '$' are pre-defined environment variables, which can be found [here](https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/shell_scripts/cloud_deploy_backend.sh). An example of a dockerfile we've created can be found here
 
 ### Question 16
 
