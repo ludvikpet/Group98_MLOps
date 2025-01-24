@@ -497,7 +497,8 @@ To allow for the use of Vertex AI, we wrote a configuration file `gcloud_vertex/
 >
 > Answer:
 
---- question 23 fill here ---
+we wrote an API using fastAPI, paired with a frontend with streamlit. The API is hosted as a cloud run docker container (both backend and frontend). The API allows users to send a sample email which they wish to have classified, and the API plots top 10 prediction probabilities. In addition, the backend saves all requests to a .csv in cloud, which we use for user-reports and data drifting. This is explained more thoroughly in the extras question at the bottom. 
+
 
 ### Question 24
 
@@ -513,7 +514,7 @@ To allow for the use of Vertex AI, we wrote a configuration file `gcloud_vertex/
 >
 > Answer:
 
---- question 24 fill here ---
+The API is deployed in the cloud. We started out by running locally, but sooner progressed to hosting them as a cloud run service, such that our girlfriends can see what we spent our time in January on instead of being with them. During local development, we debugged using curl commands and fastAPIs swaggerUI, which made it way easier. Both APIs are docker containers, and they load data/models from cloud buckets. Building these proved tiresome, so we implemented build and deployment scripts (can be seen in shell_scripts/). 
 
 ### Question 25
 
