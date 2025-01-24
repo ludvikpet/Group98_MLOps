@@ -31,7 +31,6 @@ from evidently.metric_preset import DataDriftPreset, DataQualityPreset, TargetDr
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
 from cleaninbox.data import text_dataset, tokenize_data
-
 from cleaninbox.evaluate import eval
 from cleaninbox.prediction import pred
 # from cleaninbox.data_drift import data_drift
@@ -89,7 +88,7 @@ async def lifespan(app: FastAPI):
 
     # Prometheus metrics:
     lifetime_error_counter = Counter("lifetime_errors", "Total number of application errors")
-    error_counter = Counter("errors", "Number of application errors", ["endpoint"]) # Remember to add labels to all errors
+    error_counter = Counter("function_errors", "Number of application errors", ["endpoint"]) # Remember to add labels to all errors
     hist_tracker = Histogram("request_duration_seconds", "Request duration in seconds", ["endpoint"]) # Remember to add labels to all requests
 
     try:
@@ -315,7 +314,7 @@ async def data_drift():
 
         await run_data_drift_analysis(reference_data, newdata)
 
-        async with await anyio.open_file("reports/report.html", encoding="utf-8") as f:
+        async with await anyio.open_file("reports/report.html") as f:
             html_content = await f.read()
 
         return HTMLResponse(content=html_content, status_code=200)
@@ -347,7 +346,11 @@ async def run_data_drift_analysis(reference_data: pd.DataFrame, new_data: pd.Dat
     report = Report(metrics=[DataDriftPreset(), TargetDriftPreset(), DataQualityPreset()])
     report.run(reference_data=reference_data, current_data=new_data)
     report.save_html("reports/report.html")
-
+    logger.info("Saved locally to reports.html. Trying to save to GCS...")
+    blob = bucket.blob(f"{cfg.gs.monitoring}report.html")
+    logger.info("Fetched blob.")
+    with open("reports/report.html","rb") as f:
+        blob.upload_from_file(f)
     logger.info("Done running Evidently, report saved to GCS.")
 
 

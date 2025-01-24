@@ -6,8 +6,8 @@ steps:
     - '-c'
     - |
       apk add --no-cache gettext
-      envsubst < gcloud_vertex/config_cpu.yaml > gcloud_vertex/config_cpu.yaml.tmp
-      mv gcloud_vertex/config_cpu.yaml.tmp gcloud_vertex/config_cpu.yaml
+      envsubst < gcloud_vertex/config_gpu.yaml > gcloud_vertex/config_gpu.yaml.tmp
+      mv gcloud_vertex/config_gpu.yaml.tmp gcloud_vertex/config_gpu.yaml
   secretEnv: ['WANDB_API_KEY']
 
 - name: 'alpine'
@@ -17,7 +17,7 @@ steps:
   args:
     - '-c'
     - |
-      cat gcloud_vertex/config_cpu.yaml
+      cat gcloud_vertex/config_gpu.yaml
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'Train on vertex AI'
@@ -29,11 +29,11 @@ steps:
     - '--region'
     - 'europe-west1'
     - '--display-name'
-    - 'fullfit-8k-40-epoch'
+    - 'fullfit-8k-40-epoch-GPU'
     - '--config'
     - '${_VERTEX_TRAIN_CONFIG}'
 substitutions:
-  _VERTEX_TRAIN_CONFIG: 'gcloud_vertex/config_cpu.yaml'
+  _VERTEX_TRAIN_CONFIG: 'gcloud_vertex/config_gpu.yaml'
 availableSecrets:
   secretManager:
   - versionName: projects/170780472924/secrets/WANDB_API_KEY/versions/1

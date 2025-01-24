@@ -7,7 +7,7 @@ export LOCATION="europe-west1"
 export REPO_NAME="email-api"
 export IMAGE_NAME="backend_local"
 export IMAGE_TAG="latest"
-export DOCKER_NAME="banking_api.dockerfile"
+export DOCKER_NAME="backend.dockerfile"
 
 # Build docker image 
 docker build -f dockerfiles/$DOCKER_NAME -t $IMAGE_NAME:$IMAGE_TAG .
