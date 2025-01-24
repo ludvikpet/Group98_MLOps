@@ -10,6 +10,7 @@ from transformers import BertTokenizer
 import torch
 from hydra.utils import to_absolute_path #for resolving paths as originally for loading data
 import hydra
+from hydra import compose, initialize
 from omegaconf import DictConfig, OmegaConf
 from loguru import logger
 import sys
@@ -17,6 +18,7 @@ from torch.utils.data import random_split
 from google.cloud.storage import Bucket
 import io
 import pandas as pd
+from google.cloud import storage
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
@@ -145,7 +147,6 @@ def get_data(bucket: Bucket, proc_path: Path):
 
     return train_text, train_labels, test_text, test_labels
 
-@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
 def get_monitoring_data(bucket: Bucket, monitor_path: Path):
     if bucket:
         # Load processed data from GCS:
@@ -153,11 +154,14 @@ def get_monitoring_data(bucket: Bucket, monitor_path: Path):
         logger.info(f"Loading monitoring data from GCS: {monitor_path}")
         reference_data, new_data = None, None
         for blob in data_blobs:
-            logger.info(f"Downloading blob: {blob.name}")
+            logger.info(f"Checking blob: {blob.name}")
             if blob.name.endswith(".csv"):
+                logger.info(f"Downloading blob: {blob.name}")
                 data_bytes = blob.download_as_bytes()
                 new_data = pd.read_csv(io.BytesIO(data_bytes))
+
             elif blob.name.endswith(".pkl"):
+                logger.info(f"Downloading blob: {blob.name}")
                 data_bytes = blob.download_as_bytes()
                 reference_data = pd.read_pickle(io.BytesIO(data_bytes))
 
@@ -165,14 +169,49 @@ def get_monitoring_data(bucket: Bucket, monitor_path: Path):
 
     # Get local monitoring data:
     reference_data = pd.read_pickle(monitor_path / "reference_data.pkl")
-    new_data = pd.read_csv(monitor_path / "new_data.csv")
+    new_data = pd.read_csv(monitor_path / "newdata_predictions_db.csv")
 
-@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
-def make_reference_data(bucket: Bucket, monitor_path: Path) -> None:
+    return reference_data, new_data
+
+def make_reference_data(bucket: Bucket, raw_path: Path = "./data/raw/banking77", monitor_path: Path = "./data/monitoring") -> None:
     if bucket:
+        data_blobs = bucket.list_blobs(prefix=raw_path)
+        logger.info(f"Loading processed data from GCS: {raw_path}")
+        reference_data, reference_inputs, reference_targets = None, None, None
+        for blob in data_blobs:
+            logger.info(f"Checking blob: {blob.name}")
+            if blob.name.endswith(".json"):
+                if "train_text" in blob.name:
+                    logger.info(f"Downloading blob: {blob.name}")
+                    data_bytes = blob.download_as_bytes()
+                    reference_inputs = json.load(io.BytesIO(data_bytes))
+                elif "train_labels" in blob.name:
+                    logger.info(f"Downloading blob: {blob.name}")
+                    data_bytes = blob.download_as_bytes()
+                    reference_targets = json.load(io.BytesIO(data_bytes))
+        # {timestamp},{model_name},{len(prompt)},{prediction},{prediction_time}
+        reference_data = pd.DataFrame({
+            "input_length": [len(text) for text in reference_inputs],
+            "target": reference_targets
+        })
+
+        # Save reference data to GCS:
+        buffer = io.BytesIO()
+        reference_data.to_pickle(buffer)
+        buffer.seek(0)
+        blob = bucket.blob(f"{monitor_path}/reference_data.pkl")
+        blob.upload_from_file(buffer, content_type="application/octet-stream")
 
         return
 
+    # Locally save reference data:
+    reference_inputs = json.load(raw_path / "train_text.json")
+    reference_targets = json.load(raw_path / "train_labels.json")
+    reference_data = pd.DataFrame({
+        "input_length": [len(text) for text in reference_inputs],
+        "target": reference_targets
+    })
+    reference_data.to_pickle(monitor_path / "reference_data.pkl")
     return
 
 def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
@@ -207,6 +246,19 @@ def run_text_dataset(cfg: DictConfig) -> None:
     train, val, test = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, cfg.experiment.hyperparameters.seed)
     logger.info(f"Train size: {len(train)}, Val size: {len(val)}, Test size: {len(test)}")
 
+# For making reference data for monitoring:
+@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
+def main(cfg: DictConfig) -> None:
+    logger.info("Running main function...")
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(cfg.gs.bucket)
+
+    make_reference_data(bucket = bucket,
+                        raw_path = Path(cfg.gs.raw_data),
+                        monitor_path = Path(cfg.gs.monitoring))
+
 if __name__ == "__main__":
     #preprocess()
     run_text_dataset()
+    #main()

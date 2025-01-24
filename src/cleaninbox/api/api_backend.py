@@ -7,7 +7,7 @@ import datetime
 import anyio
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile, BackgroundTasks
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from hydra import initialize, compose
 from typing import Optional
 import anyio
@@ -24,9 +24,14 @@ import zipfile
 import uvicorn
 import evidently
 from prometheus_client import Counter, make_asgi_app, Histogram
+import pandas as pd
+
+from evidently.report import Report
+from evidently.metric_preset import DataDriftPreset, DataQualityPreset, TargetDriftPreset
 
 from cleaninbox.model import BertTypeClassification  # Ensure this points to the correct module
 from cleaninbox.data import text_dataset, tokenize_data
+from cleaninbox.monitoring.data_drift import data_drift
 from cleaninbox.evaluate import eval
 from cleaninbox.prediction import pred
 
@@ -35,7 +40,7 @@ logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, newdata_blob
+    global model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, error_counter, reference_data, newdata_blob
 
     # Initialize Hydra configuration
     with initialize(config_path="../../../configs", version_base="1.1"):
@@ -70,11 +75,15 @@ async def lifespan(app: FastAPI):
     error_counter = Counter("errors", "Number of application errors", ["endpoint"])
     model_performance = Histogram("model_performance", "Model performance metrics", ["metric"])
 
-    # TODO testing this part
-    with open("prediction_database.csv", "w") as file:
-        file.write("time, model_name, input_length, prediction, prediction_time\n")
-
     # New data blob for monitoring:
+    # Load processed data from GCS:
+    logger.info(f"Loading reference data from GCS: {cfg.gs.monitoring_ref_data}")
+    referencedata_blob = bucket.get_blob(cfg.gs.monitoring_ref_data)
+    logger.info(f"Downloading blob: {referencedata_blob}")
+    data_bytes = referencedata_blob.download_as_bytes()
+    reference_data = pd.read_pickle(io.BytesIO(data_bytes))
+
+    # newdata blob for monitoring
     newdata_blob = bucket.blob(cfg.gs.monitoring_db)
 
     try:
@@ -83,7 +92,7 @@ async def lifespan(app: FastAPI):
 
     finally:
         logger.info("Shutting down application...")
-        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, error_counter
+        del model, test_data, label_names, cfg, DEVICE, storage_client, bucket, tokenizer, newdata_blob, reference_data, error_counter
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/metrics", make_asgi_app())
@@ -264,45 +273,79 @@ async def predict(request: PredictRequest,
         start = time.time()
         prediction_result = pred(tokenizer, _model, prompt, label_names, DEVICE)
         prediction_time = time.time() - start
-        #background_tasks.add_task(save_prediction_to_gcp, prompt, label_names.index(prediction_result['predicted_label'])) # TODO test first
-        background_tasks.add_task(test_add_to_local_db, prompt, request.model_name, label_names.index(prediction_result['predicted_label']),prediction_time)
+        background_tasks.add_task(save_prediction_to_gcp,
+                                  prompt,
+                                  request.model_name,
+                                  label_names.index(prediction_result['predicted_label']),
+                                  prediction_time)
         return prediction_result
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-def test_add_to_local_db(
-    prompt: str,
-    model_name: str,
-    prediction: int,
-    prediction_time: float
-) -> None:
-    """Simple function to add prediction to database."""
-    now = str(datetime.datetime.now(tz=datetime.UTC))
-    with open("prediction_database.csv", "a") as file:
-        file.write(f"{now}, {model_name}, {len(prompt)}, {prediction}, {prediction_time}\n")
-
-# Save prediction results to GCP
-def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, prediction_time: float):
-    """Save the prediction results to GCP bucket."""
+@app.get("/data-drift/", response_class=HTMLResponse)
+async def data_drift():
+    """Use Evidently to generate data drift report"""
     try:
+        newdata = load_and_process_newdata()
 
-        logger.info(f"Writing prediction to CSV file: {cfg.gs.monitoring_db}")
+        await run_data_drift_analysis(reference_data, newdata)
 
-        csv_data = newdata_blob.download_as_string().decode('utf-8')
+        async with await anyio.open_file("report.html", encoding="utf-8") as f:
+            html_content = await f.read()
 
-        # Append new data to the CSV
-        timestamp = datetime.datetime.now(tz=datetime.UTC)
-        csv_data += f"\n{timestamp},{model_name},{len(prompt)},{prediction},{prediction_time}"
-
-        # Upload the updated CSV back to GCP
-        newdata_blob.upload_from_string(csv_data)
-
-        logger.info(f"Data written to CSV file: {cfg.gs.monitoring_db}")
+        return HTMLResponse(content=html_content, status_code=200)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Save prediction results to GCP
+def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, prediction_time: float):
+    """Save the prediction results to GCP bucket."""
+
+    logger.info(f"Writing prediction to CSV file: {cfg.gs.monitoring_db}")
+
+    csv_data = newdata_blob.download_as_string().decode('utf-8')
+
+    # Append new data to the CSV
+    timestamp = datetime.datetime.now(tz=datetime.UTC)
+    csv_data += f"\n{timestamp},{model_name},{len(prompt)},{prediction},{prediction_time}"
+
+    # Upload the updated CSV back to GCP
+    newdata_blob.upload_from_string(csv_data)
+
+    logger.info(f"Data written to CSV file: {cfg.gs.monitoring_db}")
+
+async def run_data_drift_analysis(reference_data: pd.DataFrame, new_data: pd.DataFrame):
+    """Run the data drift analysis with Evidently and return report."""
+
+    logger.info("Running Evidently analysis...")
+    report = Report(metrics=[DataDriftPreset(), TargetDriftPreset(), DataQualityPreset()])
+    report.run(reference_data=reference_data, current_data=new_data)
+    report.save("report.html")
+
+    logger.info("Done running Evidently, report saved to GCS.")
+
+
+def load_and_process_newdata() -> pd.DataFrame:
+    """Download and process the new data from the GCS bucket for monitoring."""
+
+    logger.info(f"Downloading blob: {newdata_blob.name}")
+    data_bytes = newdata_blob.download_as_bytes()
+    new_data = pd.read_csv(io.BytesIO(data_bytes))
+
+    logger.info("Done retrieving data, preparing data for Evidently...")
+
+    new_data = new_data.drop(columns=['time', 'model_name', 'prediction_time'])
+    new_data = new_data.rename(
+        columns={
+            'prediction': 'target'
+        }
+    )
+
+    return new_data
+
 if __name__ == "__main__":
     uvicorn.run(app, host='127.0.0.1', port=int(os.environ.get('PORT', 8080)))
+
+
