@@ -480,7 +480,9 @@ Cloud Run: A serverless platform that hosts and scales our FastAPI backend, hand
 >
 > Answer:
 
---- question 22 fill here ---
+We used Vertex AI for training our model, which we prefered over Engine because Vertex AI combines the steps of creating a VM, running a docker image and using experiment configurations into a single flow, whereas these steps are manual with Engine. 
+To allow for the use of Vertex AI, we wrote a configuration file `gcloud_vertex/config_cpu.yaml` for the custom job of Vertex AI we wanted to run, whilst specifying also the cloud-deployed image associated with the job. We additionally included environment variables in our config file to connect with W&B. We ran on europe-west1 and used machine type `n1-highmem-8`. We attempted to use Vertex AI with a gpu config file as well, but we were never allowed to run it. See question 18 for more about training in the cloud. 
+
 
 ## Deployment
 
@@ -497,7 +499,7 @@ Cloud Run: A serverless platform that hosts and scales our FastAPI backend, hand
 >
 > Answer:
 
---- question 23 fill here ---
+We wrote both an API backend and frontend in the project. We used `FastAPI` to implement the API. 
 
 ### Question 24
 
