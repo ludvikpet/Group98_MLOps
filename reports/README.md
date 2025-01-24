@@ -533,7 +533,8 @@ We did perform unit tests and load tests of our API. We spent quite a bit of tim
 
 If we were to set up unit tests for our API, we would test the expected output for a given input to assess whether the API works as intended. For example our predict end-point expects a .json input and should return a dictionary. We could assert that an arbitrary .json input correctly returns a dictionary of predicted targets and associated probabilities. We could also implement unit tests for our monitoring functionality, that should ensure that new requests are correctly written to the .csv file
 
-In terms of load testing, we could use the `locust` framework to test how heavy a load, our API could handle. This would involve simulating a number of users in a small time window, and monitoring if and when our API crashes.
+In terms of load testing, we could use the `locust` framework to test how heavy a load, our API could handle. This would involve simulating a number of users in a small time window, and monitoring if and when our API crashes. 
+We expect issues to arise for string lengths longer than the model max sequence length (we don't know the default behaviour), and when two users interact with the api which makes a write to cloud bucket concurrently. This could be tested with two scripts spawned at the same time which send requests.
 
 ### Question 26
 
