@@ -515,7 +515,7 @@ We wrote both an API backend and frontend in the project. We used `FastAPI` to i
 >
 > Answer:
 
---- question 24 fill here ---
+We managed to both deploy our API locally and in the cloud, as well as setup a frontend for our API, that implements most of our API functionality. We use *FastAPI* to run our backend and *streamlit* for our frontend. We wrap both our data and model within the lifespan model of the backend API, which was initially tested locally using local files and later on pushed to the Cloud, to grant app deployment. Some functions unfortunately don't work on the deployed backend, retrieved at: [backend](https://backend-170780472924.europe-west1.run.app), however, invoking it locally using the command `uvicorn --reload cleaninbox.api.api_backend:app` and running e.g. `curl -X 'POST' 'http://localhost:8000/evaluate/'` should execute successfully. In general, we invoke the service using the frontend API, which can be accessed simply by clicking here: [frontend](https://email-api-frontend-170780472924.europe-west1.run.app/).
 
 ### Question 25
 
