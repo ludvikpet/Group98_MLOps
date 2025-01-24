@@ -160,7 +160,7 @@ We used huggingface, more specifically the transformers and datasets packages. W
 >
 > Answer:
 
-In general we used pipreqs to generate dependencies, but it was quite bad for our packages (often not including them). Thus, in the end, we used a combination of pipreqs for automatic generation and followingly manually added packages to the requirements. We have dependencies for our package (cleaninbox), backend, and frontend. We used conda environments with local pip installment for downloading dependencies. The pyproject.toml file was used for making cleaninbox installable. Thus, the normal workflow was: conda activate venv -> pip install the current requirements you need for working on your part -> pip install . -e (for the cleaninbox package installation).
+In general we used pipreqs to generate dependencies, but it was quite bad for our packages (often not including them). Thus, in the end, we used a combination of pipreqs for automatic generation and followingly manually added packages to the requirements text file. We have dependencies for our package (cleaninbox), backend, and frontend. We used conda environments with local pip installment for downloading dependencies. The pyproject.toml file was used for making cleaninbox installable. Thus, the normal workflow was: conda activate venv -> pip install the current requirements you need for working on your part -> pip install . -e (for the cleaninbox package installation).
 
 ### Question 5
 
@@ -296,7 +296,8 @@ Here is a link to an example of workflow when triggered:
 >
 > Answer:
 
---- question 12 fill here ---
+We use configurations with Hydra extensively in our project. This also includes experimentation with sub-configs such as sub-configs for different experiments as to ensure reproducibility. We use a default experimental config which we override with hydra arguments for experiments which diverge, e.g. "python src/cleaninbox/train.py ++experiment.hyperparameters.batch_size=8" for a smaller batch-size than the default 64. We considered doing a sweep, but the model fit so well out of the box that much experimentation was not needed. We also use configs to enable the possibility of using different model types, datasets, etc. Unittests are also based on defaults given in the configs. 
+
 
 ### Question 13
 
@@ -311,7 +312,8 @@ Here is a link to an example of workflow when triggered:
 >
 > Answer:
 
---- question 13 fill here ---
+We seed EVERYTHING. We log all runs to wandb (losses, etc. but also parameter values, seed, and save the parameter values to the registry). In addition, we log all configurations for the train-job which are saved in gcp. In this way, we are doubly sure that the correct parameters have been logged in both services, and thus we exactly know which parameters were used. In order to re-do an experiment, one would simply write a new experimental config in experiments and point to this as the default experiments config in the super-config.
+
 
 ### Question 14
 
@@ -467,7 +469,8 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
-We wrote both an API backend and frontend in the project. We used `FastAPI` to implement the API. 
+we wrote an API using fastAPI, paired with a frontend with streamlit. The API is hosted as a cloud run docker container (both backend and frontend). The API allows users to send a sample email which they wish to have classified, and the API plots top 10 prediction probabilities. In addition, the backend saves all requests to a .csv in cloud, which we use for user-reports and data drifting. This is explained more thoroughly in the extras question at the bottom. 
+
 
 ### Question 24
 
@@ -483,7 +486,7 @@ We wrote both an API backend and frontend in the project. We used `FastAPI` to i
 >
 > Answer:
 
-We managed to both deploy our API locally and in the cloud, as well as setup a frontend for our API, that implements most of our API functionality. We use *FastAPI* to run our backend and *streamlit* for our frontend. We wrap both our data and model within the lifespan model of the backend API, which was initially tested locally using local files and later on pushed to the Cloud, to grant app deployment. Some functions unfortunately don't work on the deployed backend, retrieved at: [backend](https://backend-170780472924.europe-west1.run.app), however, invoking it locally using the command `uvicorn --reload cleaninbox.api.api_backend:app` and running e.g. `curl -X 'POST' 'http://localhost:8000/evaluate/'` should execute successfully. In general, we invoke the service using the frontend API, which can be accessed simply by clicking here: [frontend](https://email-api-frontend-170780472924.europe-west1.run.app/).
+We managed to both deploy our API locally and in the cloud, as well as setup a frontend for our API, that implements most of our API functionality. We use *FastAPI* to run our backend and *streamlit* for our frontend. We wrap both our data and model within the lifespan model of the backend API, which was initially tested locally using local files and later on pushed to the Cloud, to grant app deployment. During local development, we debugged using curl commands and fastAPIs swaggerUI, which made it way easier. Some functions unfortunately don't work on the deployed backend, retrieved at: [backend](https://backend-170780472924.europe-west1.run.app), however, invoking it locally using the command `uvicorn --reload cleaninbox.api.api_backend:app` and running e.g. `curl -X 'POST' 'http://localhost:8000/evaluate/'` should execute successfully. In general, we invoke the service using the frontend API, which can be accessed simply by clicking here: [frontend](https://email-api-frontend-170780472924.europe-west1.run.app/), whilst during deployment, we built the containers using deployment scripts, as building these proved tiresome.
 
 ### Question 25
 
@@ -498,7 +501,12 @@ We managed to both deploy our API locally and in the cloud, as well as setup a f
 >
 > Answer:
 
---- question 25 fill here ---
+We did perform unit tests and load tests of our API. We spent quite a bit of time getting unit tests to work with GitHub actions for testing our training process, especially in terms of getting the workflow to work with dvc and google cloud. Hence we did not proceed with implementations of unit tests and load tests for our API.
+
+If we were to set up unit tests for our API, we would test the expected output for a given input to assess whether the API works as intended. For example our predict end-point expects a .json input and should return a dictionary. We could assert that an arbitrary .json input correctly returns a dictionary of predicted targets and associated probabilities. We could also implement unit tests for our monitoring functionality, that should ensure that new requests are correctly written to the .csv file
+
+In terms of load testing, we could use the `locust` framework to test how heavy a load, our API could handle. This would involve simulating a number of users in a small time window, and monitoring if and when our API crashes. 
+We expect issues to arise for string lengths longer than the model max sequence length (we don't know the default behaviour), and when two users interact with the api which makes a write to cloud bucket concurrently. This could be tested with two scripts spawned at the same time which send requests.
 
 ### Question 26
 
