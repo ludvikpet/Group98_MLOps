@@ -571,6 +571,14 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 >
 > Answer:
 
+We had challenges with integrating Cloud Storage (Bucket) with DVC and ensuring smooth synchronization between local data storage and the GCP bucket. The reason for these issues was primarily the complexity of configuring DVC to work seamlessly with remote storage and handling permissions for accessing the GCP bucket.
+
+One common problem we had was setting up the proper authentication and access permissions for DVC to push and pull data from the bucket. Misconfigured IAM roles or service account keys often led to access-denied errors, which required multiple iterations of debugging and tweaking the roles and policies.
+Google Cloud, Docker deployment API, Hydra, Weight and Biases
+
+In terms of Docker API deployment, we faced issues with traffic management, open ports, and unhelpful output logs, which provided little debugging insight. The lack of support from exercise files or online resources made troubleshooting more difficult. Additionally, debugging was time-consuming due to the long boot times of the Docker image, slowing down iterations and testing.
+
+We also struggled with Google Cloud, as it is not very user-friendly. Identifying which service account was building was confusing, and we were never granted access to use GPUs on Vertex AI. Additionally, when Cloud Run failed, no logs were provided, making debugging extremely difficult and frustrating. These issues added significant challenges to the workflow.
 --- question 30 fill here ---
 
 ### Question 31
