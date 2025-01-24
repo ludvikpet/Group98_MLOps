@@ -1,5 +1,6 @@
 # Group98_MLOps
-Now unofficially an org!<br>
+Now unofficially an org!
+<br>
 Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.app)<br>
 (and for the nerds, our [backend](https://backend-170780472924.europe-west1.run.app) can be checked out)<br>
 *Adam Ledou, s204216*  <br>
@@ -7,6 +8,17 @@ Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.ap
 *Martin Maximilian Ægidius, s194119*  <br>
 *Troels Ludwig, s204227*  <br>
 
+# Links to deployed API
+Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.app)! And for the nerds, our [backend](https://backend-170780472924.europe-west1.run.app).
+
+# Run API locally
+Run backend: `uvicorn --reload cleaninbox.api.api_backend:app` 
+
+Remember to add an eligible model - one of: *fullfit8k32b*, *Semifit4k*, *model_current* (overfit model) and *fullfit* (only 1 epoch).
+
+Run frontend: `streamlit run src/cleaninbox/api/multipagefrontend.py`
+
+#
 **Overall goal**:
 The main goal of the project is to develop our MLOps skill-sets. Our intention is to implement the whole MLOps pipeline, with special emphasis on the operations part of the pipeline.
 
