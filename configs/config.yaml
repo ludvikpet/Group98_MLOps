@@ -47,5 +47,5 @@ mount_gs:
 
 
 defaults:
-    - experiment: fullfit
+    - experiment: semifit
     - optimizer: adam

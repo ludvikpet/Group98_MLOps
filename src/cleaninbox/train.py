@@ -47,8 +47,9 @@ def train(cfg: DictConfig):
     environment_cfg = cfg.environment
     if(environment_cfg.run_in_cloud==True):
         cloud_model_path = f"models/{experiment_name}.pth" #used to register trained model outside of docker container
-        cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
-        cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
+        # cfg.basic.proc_path = ("/gcs/banking77"+cfg.basic.proc_path).replace(".","") #append cloud bucket to path string format
+        # cfg.basic.raw_path = ("/gcs/banking77"+cfg.basic.raw_path).replace(".","") #append cloud bucket to path string format
+        logger.warning(f"Running in cloud. Saving model to {cloud_model_path}")
 
     print(OmegaConf.to_yaml(cfg))
 
@@ -78,7 +79,9 @@ def train(cfg: DictConfig):
     logger.info(f"{lr=}, {batch_size=}, {epochs=}")
 
     model = model.to(DEVICE)
-    train_set, _, _ = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, seed) #need to be variable based on cfg
+    client = storage.Client()
+    bucket = client.bucket("banking77")
+    train_set, _, _ = text_dataset(cfg.dataset.val_size, cfg.gs.proc_data, "", seed, bucket=bucket) #need to be variable based on cfg
     string_labels = load_label_strings(cfg.basic.proc_path,cfg.dataset.name)
 
 

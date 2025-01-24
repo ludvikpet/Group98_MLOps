@@ -1,0 +1,14 @@
+# @package _group_
+
+hyperparameters:
+  lr: 1e-4
+  batch_size: 64
+  epochs: 40
+  seed: 42
+  num_samples: 4000
+
+logging:
+  log_wandb: True
+
+experiment_description: 
+  name: Semifit4k
