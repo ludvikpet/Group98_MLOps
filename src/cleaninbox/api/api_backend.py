@@ -72,7 +72,7 @@ async def lifespan(app: FastAPI):
 
     # TODO testing this part
     with open("prediction_database.csv", "w") as file:
-        file.write("time, input_length, prediction, prediction_time\n")
+        file.write("time, model_name, input_length, prediction, prediction_time\n")
 
     # New data blob for monitoring:
     newdata_blob = bucket.blob(cfg.gs.monitoring_db)
@@ -127,7 +127,7 @@ def retrieve_model(model_name: str):
         return model
 
     # Download model checkpoint and return model:
-    model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")    
+    model_ckpt = bucket.get_blob(cfg.gs.models + "/" + model_name + ".pth")
     logger.info(f"Downloading model checkpoint: {model_ckpt.name}")
     file_data = model_ckpt.download_as_bytes()
     ckpt = io.BytesIO(file_data)
@@ -265,7 +265,7 @@ async def predict(request: PredictRequest,
         prediction_result = pred(tokenizer, _model, prompt, label_names, DEVICE)
         prediction_time = time.time() - start
         #background_tasks.add_task(save_prediction_to_gcp, prompt, label_names.index(prediction_result['predicted_label'])) # TODO test first
-        background_tasks.add_task(test_add_to_local_db, prompt, label_names.index(prediction_result['predicted_label']),prediction_time)
+        background_tasks.add_task(test_add_to_local_db, prompt, request.model_name, label_names.index(prediction_result['predicted_label']),prediction_time)
         return prediction_result
 
     except Exception as e:
@@ -274,13 +274,14 @@ async def predict(request: PredictRequest,
 
 def test_add_to_local_db(
     prompt: str,
+    model_name: str,
     prediction: int,
     prediction_time: float
 ) -> None:
     """Simple function to add prediction to database."""
-    now = str(datetime.now(tz=datetime.UTC))
+    now = str(datetime.datetime.now(tz=datetime.UTC))
     with open("prediction_database.csv", "a") as file:
-        file.write(f"{now}, {len(prompt)}, {prediction}, {prediction_time}\n")
+        file.write(f"{now}, {model_name}, {len(prompt)}, {prediction}, {prediction_time}\n")
 
 # Save prediction results to GCP
 def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, prediction_time: float):
@@ -304,4 +305,4 @@ def save_prediction_to_gcp(prompt: str, model_name: str, prediction: int, predic
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 8080))) 
+    uvicorn.run(app, host='127.0.0.1', port=int(os.environ.get('PORT', 8080)))

@@ -16,6 +16,7 @@ import sys
 from torch.utils.data import random_split
 from google.cloud.storage import Bucket
 import io
+import pandas as pd
 
 logger.remove()
 logger.add(sys.stdout, level="INFO", format="<green>{message}</green> | {level} | {time:HH:mm:ss}")
@@ -96,7 +97,7 @@ def tokenize_data(self, text: list, tokenizer: BertTokenizer) -> torch.Tensor:
         padding=True,              # Pad to the maximum sequence length
         truncation=False,           # Truncate to the maximum sequence length if necessary
         return_tensors='pt',      # Return PyTorch tensors
-        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded 
+        add_special_tokens=True    # Add special tokens CLS and SEP <- possibly uneeded
         )
         return encoding
 
@@ -135,22 +136,52 @@ def get_data(bucket: Bucket, proc_path: Path):
                     test_labels = data
 
         return train_text, train_labels, test_text, test_labels
-    
+
     # Get locally processed data:
     train_text = torch.load(proc_path / "train_text.pt")
     train_labels = torch.load(proc_path / "train_labels.pt")
     test_text = torch.load(proc_path / "test_text.pt")
     test_labels = torch.load(proc_path / "test_labels.pt")
-    
+
     return train_text, train_labels, test_text, test_labels
+
+@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
+def get_monitoring_data(bucket: Bucket, monitor_path: Path):
+    if bucket:
+        # Load processed data from GCS:
+        data_blobs = bucket.list_blobs(prefix=monitor_path)
+        logger.info(f"Loading monitoring data from GCS: {monitor_path}")
+        reference_data, new_data = None, None
+        for blob in data_blobs:
+            logger.info(f"Downloading blob: {blob.name}")
+            if blob.name.endswith(".csv"):
+                data_bytes = blob.download_as_bytes()
+                new_data = pd.read_csv(io.BytesIO(data_bytes))
+            elif blob.name.endswith(".pkl"):
+                data_bytes = blob.download_as_bytes()
+                reference_data = pd.read_pickle(io.BytesIO(data_bytes))
+
+        return reference_data, new_data
+
+    # Get local monitoring data:
+    reference_data = pd.read_pickle(monitor_path / "reference_data.pkl")
+    new_data = pd.read_csv(monitor_path / "new_data.csv")
+
+@hydra.main(config_path="../../configs", config_name="config.yaml", version_base="1.1")
+def make_reference_data(bucket: Bucket, monitor_path: Path) -> None:
+    if bucket:
+
+        return
+
+    return
 
 def text_dataset(val_size, proc_path, dataset_name, seed, bucket: Bucket=None) -> Tuple[TensorDataset, TensorDataset, TensorDataset]:
     """ Load the processed text dataset. """
-    
+
     logger.info(f"Loading processed data: {dataset_name}, proc_path: {proc_path}")
     proc_path = Path(to_absolute_path(proc_path)) / Path(dataset_name).stem if not bucket else proc_path
     logger.info(f"text_dataset has path: {proc_path}")
-    
+
     train_text, train_labels, test_text, test_labels = get_data(bucket, proc_path)
     train = TensorDataset(train_text["input_ids"], train_text["token_type_ids"], train_text["attention_mask"],train_labels)
     test = TensorDataset(test_text["input_ids"], test_text["token_type_ids"], test_text["attention_mask"], test_labels)
