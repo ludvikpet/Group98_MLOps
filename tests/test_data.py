@@ -26,8 +26,8 @@ def test_text_dataset():
     seed = 45
     train, val, test = text_dataset(cfg.dataset.val_size, cfg.basic.proc_path, cfg.dataset.name, seed)
 
-    assert isinstance(train,torch.utils.data.Subset)
-    assert isinstance(val,torch.utils.data.Subset)
+    assert isinstance(train,torch.utils.data.TensorDataset)
+    assert isinstance(val,torch.utils.data.TensorDataset)
     assert isinstance(test,torch.utils.data.TensorDataset)
 
     split = len(train) + len(val)
