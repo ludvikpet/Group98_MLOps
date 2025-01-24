@@ -1,6 +1,5 @@
 import streamlit as st
 
-#icon list: https://materialdesignicons.com/ ChartBellCurve
 home_page = st.Page("welcome.py",title="Cleaninbox", icon=":material/home_app_logo:",default=True)
 predict_page = st.Page(
     "prediction/predict.py", title="Predict", icon=":material/computer:", default=False
