@@ -52,27 +52,27 @@ will check the repositories and the code to verify your answers.
 * [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
 * [x] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
 * [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
-* [ ] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
+* [x] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
-* :x: _Remember to comply with good coding practices (`pep8`) while doing the project (M7)_
-* :x: _Do a bit of code typing and remember to document essential parts of your code (M7)_
-* :white_check_mark: Setup version control for your data or part of your data (M8)
-* :white_check_mark: Add command line interfaces and project commands to your code where it makes sense (M9)
-* :white_check_mark: Construct one or multiple docker files for your code (M10)
-* :white_check_mark: Build the docker files locally and make sure they work as intended (M10)
-* :white_check_mark: Write one or multiple configurations files for your experiments (M11)
-* :white_check_mark: Used Hydra to load the configurations and manage your hyperparameters (M11)
-* :x: _Use profiling to optimize your code (M12)_
-* :white_check_mark: Use logging to log important events in your code (M14)
-* :white_check_mark: Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-* :x: Consider running a hyperparameter optimization sweep (M14)
-* :x: _Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)_
+* [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
+* [x] Do a bit of code typing and remember to document essential parts of your code (M7)
+* [x] Setup version control for your data or part of your data (M8)
+* [x] Add command line interfaces and project commands to your code where it makes sense (M9)
+* [x] Construct one or multiple docker files for your code (M10)
+* [x] Build the docker files locally and make sure they work as intended (M10)
+* [x] Write one or multiple configurations files for your experiments (M11)
+* [x] Used Hydra to load the configurations and manage your hyperparameters (M11)
+* [ ] Use profiling to optimize your code (M12)
+* [x] Use logging to log important events in your code (M14)
+* [x] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
+* [ ] Consider running a hyperparameter optimization sweep (M14)
+* [ ] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
 
 * [x] Write unit tests related to the data part of your code (M16)
 * [x] Write unit tests related to model construction and or model training (M16)
-* [x] Calculate the code coverage (M16)
+* [ ] Calculate the code coverage (M16)
 * [x] Get some continuous integration running on the GitHub repository (M17)
 * [x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
 * [ ] Add a linting step to your continuous integration (M17)
@@ -94,7 +94,7 @@ will check the repositories and the code to verify your answers.
 * [x] Check how robust your model is towards data drifting (M27)
 * [x] Deploy to the cloud a drift detection API (M27)
 * [x] Instrument your API with a couple of system metrics (M28)
-* [ ] Setup cloud monitoring of your instrumented application (M28)
+* [x] Setup cloud monitoring of your instrumented application (M28)
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
@@ -104,7 +104,7 @@ will check the repositories and the code to verify your answers.
 
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
+* [x] Revisit your initial project description. Did the project turn out as you wanted?
 * [x] Create an architectural diagram over your MLOps pipeline
 * [x] Make sure all group members have an understanding about all parts of the project
 * [x] Uploaded all your code to GitHub
@@ -209,7 +209,21 @@ We agreed that it was good style to typehint functions, but as we changed them s
 >
 > Answer:
 
-We implemented 
+We have implemented (active) 7 tests; one that extensively tests the processed data, three which test our model and four tests which test the training process.
+
+The test on our processed data makes assertions on:
+* Object types with `isinstance()` (should match `TensorDataset`)
+* Shape and size mismatches as well as correct number of classes
+* All targets are present in both training and test datasets.
+
+The tests on our model make assertions on:
+* The model name and configuration
+* The shape of the output from the model
+* Device compatibility, i.e. that each parameter can be moved to the appropriate device
+
+The tests on the training process test that:
+* The gradients are updated and non-zero after an update
+* All relevant functions and external dependencies are correctly called during one epoch of training with the use of mocking.
 
 ### Question 8
 
@@ -224,7 +238,10 @@ We implemented
 >
 > Answer:
 
---- question 8 fill here ---
+We did not run coverage on the code, since we did not get the coverage package to work, neither locally nor with github actions. However we would expect a relatively low coverage, since there are numerous modules of our code that we did not implement tests for, as is the case for the any api functionality, monitoring or evaluation to name a few.
+
+If we had hypothetically gotten a code coverage of close to 100%, we would still not naively trust our code to be error free, since coverage does not completely ensure that the code has no errors. There may still be code that hasn't been run or tested with our tests, albeit corner cases. On the other hand, a high coverage still tells us that large parts of the code have been tested.
+
 
 ### Question 9
 
@@ -393,7 +410,19 @@ We used different measures to counteract bugs throughout our project. We tried t
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following six Cloud services: Build Trigger, Artifact Registry, Vertex AI, Bucket, Secret Management and Run.
+
+Cloud Build Trigger: Automates the build process by triggering builds whenever changes are pushed to our GitHub repository.
+
+Artifact Registry: Stores and manages container images and other artifacts.
+
+Vertex AI: Provides a platform for training, deploying, and managing our model.
+
+Bucket: A scalable and secure storage solution used to store and manage user statistics and data.
+
+Cloud Secret Manager: A service used to securely store and manage sensitive information like API keys, credentials, and other secrets.
+
+Cloud Run: A serverless platform that hosts and scales our FastAPI backend, handling prediction requests from the Streamlit frontend.
 
 ### Question 18
 
@@ -417,7 +446,7 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 19 fill here ---
+![my_image](figures/GCP_Bucket.png)
 
 ### Question 20
 
@@ -425,7 +454,6 @@ We didn't directly use the compute engine other than for training a simple versi
 > **stored. You can take inspiration from [this figure](figures/registry.png).**
 >
 > Answer:
-![my_image](figures/Artifact_Registry.png)
 
 ![my_image](figures/Artifact_Registry.png)
 
@@ -435,7 +463,6 @@ We didn't directly use the compute engine other than for training a simple versi
 > **your project. You can take inspiration from [this figure](figures/build.png).**
 >
 > Answer:
-![my_image](figures/Cloud_build_history.png)
 
 ![my_image](figures/Cloud_build_history.png)
 
@@ -452,7 +479,8 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 22 fill here ---
+We used Vertex AI for training our model, which we prefered over Engine because Vertex AI combines the steps of creating a VM, running a docker image and using experiment configurations into a single flow, whereas these steps are manual with Engine.
+To allow for the use of Vertex AI, we wrote a configuration file `gcloud_vertex/config_cpu.yaml` for the custom job of Vertex AI we wanted to run, whilst specifying also the cloud-deployed image associated with the job. We additionally included environment variables in our config file to connect with W&B. We ran on europe-west1 and used machine type `n1-highmem-8`. We attempted to use Vertex AI with a gpu config file as well, but we were never allowed to run it. See question 18 for more about training in the cloud.
 
 ## Deployment
 
@@ -486,7 +514,7 @@ we wrote an API using fastAPI, paired with a frontend with streamlit. The API is
 >
 > Answer:
 
-We managed to both deploy our API locally and in the cloud, as well as setup a frontend for our API, that implements most of our API functionality. We use *FastAPI* to run our backend and *streamlit* for our frontend. We wrap both our data and model within the lifespan model of the backend API, which was initially tested locally using local files and later on pushed to the Cloud, to grant app deployment. During local development, we debugged using curl commands and fastAPIs swaggerUI, which made it way easier. Some functions unfortunately don't work on the deployed backend, retrieved at: [backend](https://backend-170780472924.europe-west1.run.app), however, invoking it locally using the command `uvicorn --reload cleaninbox.api.api_backend:app` and running e.g. `curl -X 'POST' 'http://localhost:8000/evaluate/'` should execute successfully. In general, we invoke the service using the frontend API, which can be accessed simply by clicking here: [frontend](https://email-api-frontend-170780472924.europe-west1.run.app/), whilst during deployment, we built the containers using deployment scripts, as building these proved tiresome.
+The API is deployed in the cloud. We started out by running locally, but sooner progressed to hosting them as a cloud run service, such that our girlfriends can see what we spent our time in January on instead of being with them. During local development, we debugged using curl commands and fastAPIs swaggerUI, which made it way easier. Both APIs are docker containers, and they load data/models from cloud buckets. Building these proved tiresome, so we implemented build and deployment scripts (can be seen in shell_scripts/). 
 
 ### Question 25
 
@@ -541,11 +569,12 @@ Currently, our diagnostics don't tell us anything, given the low lifetime throug
 > *costing the most was ... due to ... . Working in the cloud was ...*
 >
 > Answer:
+
 We spent a total of $6 to train the model on Vetex AI, Inference on Cloud Run and storage on GCP.
 
 Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google Cloud Platform to identify which service was the most expensive. We suspect this might be due to running on credits.
 
---- question 27 fill here ---
+As a group, we agreed that while Google Cloud offers powerful tools, its interface is not very user-friendly, and navigating the platform can be slow and frustrating. The terminal commands were easier to work with, but we encountered issues gaining access to GPUs, which was particularly inconvenient. Despite these challenges, there was a consensus that running the model was relatively inexpensive overall.
 
 ### Question 28
 
@@ -561,7 +590,7 @@ Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google C
 >
 > Answer:
 
-We implemented a frontend using streamlit which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using evidently, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using promotheus. 
+We implemented a frontend using `streamlit` which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using `evidently`, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using `promotheus`.
 
 ### Question 29
 
@@ -577,13 +606,14 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 > *Whenever we commit code and push to GitHub, it auto triggers ... and ... . From there the diagram shows ...*
 >
 > Answer:
-> The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
-> 
-> Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
->
->  For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
+
+The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
+
+Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
+
+For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
 ![my_image](figures/MLops_Project_Diagram.png)
---- question 29 fill here ---
+
 
 ### Question 30
 
@@ -597,7 +627,15 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 >
 > Answer:
 
---- question 30 fill here ---
+We had challenges with integrating Cloud Storage (Bucket) with DVC and ensuring smooth synchronization between local data storage and the GCP bucket. The reason for these issues was primarily the complexity of configuring DVC to work seamlessly with remote storage and handling permissions for accessing the GCP bucket.
+
+One common problem we had was setting up the proper authentication and access permissions for DVC to push and pull data from the bucket. Misconfigured IAM roles or service account keys often led to access-denied errors, which required multiple iterations of debugging and tweaking the roles and policies.
+Google Cloud, Docker deployment API, Hydra, Weight and Biases
+
+In terms of Docker API deployment, we faced issues with traffic management, open ports, and unhelpful output logs, which provided little debugging insight. The lack of support from exercise files or online resources made troubleshooting more difficult. Additionally, debugging was time-consuming due to the long boot times of the Docker image, slowing down iterations and testing.
+
+We also struggled with Google Cloud, as it is not very user-friendly. Identifying which service account was building was confusing, and we were never granted access to use GPUs on Vertex AI. Additionally, when Cloud Run failed, no logs were provided, making debugging extremely difficult and frustrating. These issues added significant challenges to the workflow.
+
 
 ### Question 31
 
