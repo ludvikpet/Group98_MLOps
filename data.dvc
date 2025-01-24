@@ -3,47 +3,23 @@ outs:
   path: data
   files:
   - relpath: monitoring/newdata_predictions_db.csv
-    md5: d41d8cd98f00b204e9800998ecf8427e
-    size: 0
-    cloud:
-      remote_storage:
-        etag: 0882f08fc6f38b8b031001
-        version_id: '1737637346146306'
+    md5: 22e31dc119a490ea258c19587a863103
+    size: 137
   - relpath: processed/banking77/label_strings.json
-    md5: 3db0e59f3e0769abc392a44377f0284e
-    size: 2332
-    cloud:
-      remote_storage:
-        etag: 0896a290c6f38b8b031001
-        version_id: '1737637346152726'
+    md5: 7d9658f2e1615bf12f08cbce6e3feb78
+    size: 2331
   - relpath: processed/banking77/test_labels.pt
-    md5: 1cdfae5a48487ec866bba63417612b35
+    md5: 1182998128c9b5057708797102a8802b
     size: 25840
-    cloud:
-      remote_storage:
-        etag: 08d2a390c6f38b8b031001
-        version_id: '1737637346152914'
   - relpath: processed/banking77/test_text.pt
-    md5: ed7927a93f22d1282cfe4d0842f094d6
+    md5: be1d8cb48cdfab231d74395cf4ac58a6
     size: 6063266
-    cloud:
-      remote_storage:
-        etag: 08b8b6c0c6f38b8b031001
-        version_id: '1737637346941752'
   - relpath: processed/banking77/train_labels.pt
-    md5: 433a8e53863631229915dde8c3a82b13
+    md5: a87b335edef8e316520f296313b69a67
     size: 81205
-    cloud:
-      remote_storage:
-        etag: 08d5da91c6f38b8b031001
-        version_id: '1737637346176341'
   - relpath: processed/banking77/train_text.pt
-    md5: 6a429a84f9e295650ce2454ff107d3ff
+    md5: 1a5f3f8aef30de412410881d5d3fad98
     size: 23528745
-    cloud:
-      remote_storage:
-        etag: 08c5d8e3c6f38b8b031001
-        version_id: '1737637347519557'
   - relpath: raw/banking77/test_labels.json
     md5: ea07086bf2484f30441c379b2a7735c4
     size: 11920
