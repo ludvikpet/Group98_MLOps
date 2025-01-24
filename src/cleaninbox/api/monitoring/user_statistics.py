@@ -37,8 +37,6 @@ if model_name!="All":
 else:
     df_tmp = df.copy()
 
-
-
 st.write(f"Overall statistics for {model_name_choice}:")
 st.dataframe(df_tmp.describe())
 

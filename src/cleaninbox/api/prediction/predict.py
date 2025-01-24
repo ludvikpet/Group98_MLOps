@@ -94,14 +94,8 @@ if submit:
     model_name_choice = model_name_dict[model_name]
     request = PredictRequest(prompt=email_string,model_name=model_name_choice)
     if len(request.prompt)>0:
-        result = classify_email(request,backend=backend)
-
-
-#uploaded_file = st.file_uploader("Enter a text-string", type=["jpg", "jpeg", "png"])
-
-#if len(request.prompt)>0:
-#    result = classify_email(request, backend=backend)
-    #st.write(result)
+        with st.spinner("classifying... this could take time..."):
+            result = classify_email(request,backend=backend)
 
         if result is not None:
             prediction = result["predicted_label"]
@@ -123,6 +117,6 @@ if submit:
             st.dataframe(df)
             df.set_index("Class", inplace=True)
             st.bar_chart(df, y="Probability",horizontal=True)
-        else:
-            st.write("Failed to get prediction")
+    else:
+        st.write("We can't classify an empty e-mail.")
 
