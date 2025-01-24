@@ -648,15 +648,12 @@ We also struggled with Google Cloud, as it is not very user-friendly. Identifyin
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-fewafewubaofewnafioewnifowf ewafw afew afewafewafionewoanf waf ewonfieownaf fewnaiof newio fweanøf wea fewa
- fweafewa fewiagonwa ognwra'g
- wa
- gwreapig ipweroang w rag
- wa grwa
-  g
-  ew
-  gwea g
-  ew ag ioreabnguorwa bg̈́aw
-   wa
-   gew4igioera giroeahgi0wra gwa
+Overall, we all contributed to most parts of the process by supporting each other with debugging and integrating the workflow. However, our main contributions to specific areas can be summarized as follows:
 
+s194119: Cloud Artifact, Vertex AI, GCP Bucket, FrontEnd
+
+s194613: Backend, FastAPI, CloudRun, DVC
+
+s204216: Unittesting, Github Actions, Evidently AI (Monitoring)
+
+s204227: Github Setup, Huggingface, WandB, Diagram
