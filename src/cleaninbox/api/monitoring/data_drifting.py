@@ -18,7 +18,7 @@ st.sidebar.header("Data drifting monitoring")
 
 @st.cache_data
 def load_html():    
-    with initialize(config_path="../../../../configs", version_base="1.1"):
+    with initialize(config_path="../../../configs", version_base="1.1"):
         cfg = compose(config_name="config")
     # Get bucket and relevant blobs:
     storage_client = storage.Client()
