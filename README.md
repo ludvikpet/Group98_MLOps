@@ -1,6 +1,6 @@
 # Group98_MLOps
-Now unofficially an org!
-Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.app)
+Now unofficially an org!<br>
+Try out [cleaninbox](https://email-api-frontend-170780472924.europe-west1.run.app)<br>
 
 *Adam Ledou, s204216*  <br>
 *Ludvik Petersen, s194613*  <br>
