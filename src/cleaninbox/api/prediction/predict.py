@@ -14,7 +14,7 @@ class PredictRequest(BaseModel):
     prompt: str
     model_name: str = "model_current"
 
-with initialize(config_path="../../../../configs", version_base="1.1"):
+with initialize(config_path="../../../configs", version_base="1.1"):
     cfg = compose(config_name="config")
 
 @st.cache_resource  
