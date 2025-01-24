@@ -384,7 +384,7 @@ We implemented
 >
 > Answer:
 
---- question 18 fill here ---
+We didn't directly use the compute engine other than for training a simple version of the training script. Here, we mainly used it to ensure that data was loaded and written correctly to the mounted buckets. Followingly we moved on to use vertex ai, which (as far as we understand) uses different machines or a subset of the VMs available in the compute engine. We started out using e2-medium, but this quickly gave us resource erorrs when running train jobs in vertex. Thus we changed to n1-highmem-8, which has 8 vCPUs and 52GB RAM. We wanted to use NVIDIA P100, but were never allowed to change the quota to 1 for vertex train jobs, and as time grew short we simply stayed on CPU instead of using a normal Compute Engine VM instance (for which we had resources) as our configuration-pipeline and secrets management had become too intertwined with the vertex job submission at this point. We used a custom image in all cases, where we setup the docker container ourselves. Retrospectively, this was stupid, as we probably could have saved a lot of time here (we spent a lot of time waiting for cloud build tasks).
 
 ### Question 19
 
