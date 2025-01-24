@@ -52,7 +52,7 @@ will check the repositories and the code to verify your answers.
 * [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
 * [x] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
 * [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
-* [ ] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
+* [x] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
 * [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 * [x] Do a bit of code typing and remember to document essential parts of your code (M7)
@@ -72,7 +72,7 @@ will check the repositories and the code to verify your answers.
 
 * [x] Write unit tests related to the data part of your code (M16)
 * [x] Write unit tests related to model construction and or model training (M16)
-* [x] Calculate the code coverage (M16)
+* [ ] Calculate the code coverage (M16)
 * [x] Get some continuous integration running on the GitHub repository (M17)
 * [x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
 * [ ] Add a linting step to your continuous integration (M17)
@@ -94,7 +94,7 @@ will check the repositories and the code to verify your answers.
 * [x] Check how robust your model is towards data drifting (M27)
 * [x] Deploy to the cloud a drift detection API (M27)
 * [x] Instrument your API with a couple of system metrics (M28)
-* [ ] Setup cloud monitoring of your instrumented application (M28)
+* [x] Setup cloud monitoring of your instrumented application (M28)
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
@@ -104,7 +104,7 @@ will check the repositories and the code to verify your answers.
 
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
+* [x] Revisit your initial project description. Did the project turn out as you wanted?
 * [x] Create an architectural diagram over your MLOps pipeline
 * [x] Make sure all group members have an understanding about all parts of the project
 * [x] Uploaded all your code to GitHub
@@ -141,7 +141,7 @@ s194119, s194613, s204216, s204227
 >
 > Answer:
 
-We used huggingface, more specifically the transformers and datasets packages. We used this in order to download a pre-trained model (TinyBERT), which we add a classification head to, which we train. Our dataset, banking77, is available in the datasets repository (PolyAI/banking77). We used the BertTokenizer class from transformers in order to pre-process our dataset and save to tensors, such that we do not have slow-downs from tokenization during training. At inference, we still use the tokenizer. Using a pre-trained model significantly lowered the time needed for hyperparameter-tuning, and thus we could use a coarse approach and spend the time on getting google cloud to work properly. 
+We used huggingface, more specifically the transformers and datasets packages. We used this in order to download a pre-trained model (TinyBERT), which we add a classification head to, which we train. Our dataset, banking77, is available in the datasets repository (PolyAI/banking77). We used the BertTokenizer class from transformers in order to pre-process our dataset and save to tensors, such that we do not have slow-downs from tokenization during training. At inference, we still use the tokenizer. Using a pre-trained model significantly lowered the time needed for hyperparameter-tuning, and thus we could use a coarse approach and spend the time on getting google cloud to work properly.
 ## Coding environment
 
 > In the following section we are interested in learning more about you local development environment. This includes
@@ -176,7 +176,7 @@ In general we used pipreqs to generate dependencies, but it was quite bad for ou
 >
 > Answer:
 
-From the cookiecutter template, we have filled out the .github (which contains our unit-test workflow), configs (for hydra configuration), data (raw and processed directories which are handled in the cloud), dockerfiles (for building a training image, inference backend and frontend image), models (saved to google cloud storage, but used initially for local testing), src (for handling everything from training to evaluation, additionally we added an api-folder with the frontend-backend src) and tests (for unit-testing, these are used by github actions). We did not use jupyter notebooks, and thus have nothing in notebooks. Like-wise, all figures are tracked in wandb, as we did not want to clutter our computers and github storage. To src we added an api-folder which handles the frontend-backend services. We didn't have time to fill the docs folder. 
+From the cookiecutter template, we have filled out the .github (which contains our unit-test workflow), configs (for hydra configuration), data (raw and processed directories which are handled in the cloud), dockerfiles (for building a training image, inference backend and frontend image), models (saved to google cloud storage, but used initially for local testing), src (for handling everything from training to evaluation, additionally we added an api-folder with the frontend-backend src) and tests (for unit-testing, these are used by github actions). We did not use jupyter notebooks, and thus have nothing in notebooks. Like-wise, all figures are tracked in wandb, as we did not want to clutter our computers and github storage. To src we added an api-folder which handles the frontend-backend services. We didn't have time to fill the docs folder.
 
 ### Question 6
 
@@ -191,7 +191,7 @@ From the cookiecutter template, we have filled out the .github (which contains o
 >
 > Answer:
 
-We agreed that it was good style to typehint functions, but as we changed them so oftenly due to intense debugging, we forgot a bit about that, sadly. For hard to understand lines, we additionally agreed to comment them, hopefully elaborating amply what the line(s) do and why it is necessary. Regarding code quality, we mainly agreed that code is first pushed to main or active feature branches when it works, and in addition we agreed to not just copy paste chatGPT code blindly. These concepts are important for large projects because it is easy to get confused about inputs/outputs of functions which other developers are making concurrently. In addition, no typehinting can introduce bugs (e.g. passing another iterable than a list to a function which goes through the iterable and followingly uses list-specific methods or alternatively returns the same iterable to another function, which suddenly will fail due to it not being an instance of xyz). Linting is important for keeping track of uneeded dependencies/double imports, trailing white-spaces etc. in order to ensure good readability of the code when shown in different downstream pipelines.  
+We agreed that it was good style to typehint functions, but as we changed them so oftenly due to intense debugging, we forgot a bit about that, sadly. For hard to understand lines, we additionally agreed to comment them, hopefully elaborating amply what the line(s) do and why it is necessary. Regarding code quality, we mainly agreed that code is first pushed to main or active feature branches when it works, and in addition we agreed to not just copy paste chatGPT code blindly. These concepts are important for large projects because it is easy to get confused about inputs/outputs of functions which other developers are making concurrently. In addition, no typehinting can introduce bugs (e.g. passing another iterable than a list to a function which goes through the iterable and followingly uses list-specific methods or alternatively returns the same iterable to another function, which suddenly will fail due to it not being an instance of xyz). Linting is important for keeping track of uneeded dependencies/double imports, trailing white-spaces etc. in order to ensure good readability of the code when shown in different downstream pipelines.
 ## Version control
 
 > In the following section we are interested in how version control was used in your project during development to
@@ -209,7 +209,21 @@ We agreed that it was good style to typehint functions, but as we changed them s
 >
 > Answer:
 
-We implemented 
+We have implemented (active) 7 tests; one that extensively tests the processed data, three which test our model and four tests which test the training process.
+
+The test on our processed data makes assertions on:
+* Object types with `isinstance()` (should match `TensorDataset`)
+* Shape and size mismatches as well as correct number of classes
+* All targets are present in both training and test datasets.
+
+The tests on our model make assertions on:
+* The model name and configuration
+* The shape of the output from the model
+* Device compatibility, i.e. that each parameter can be moved to the appropriate device
+
+The tests on the training process test that:
+* The gradients are updated and non-zero after an update
+* All relevant functions and external dependencies are correctly called during one epoch of training with the use of mocking.
 
 ### Question 8
 
@@ -224,7 +238,10 @@ We implemented
 >
 > Answer:
 
---- question 8 fill here ---
+We did not run coverage on the code, since we did not get the coverage package to work, neither locally nor with github actions. However we would expect a relatively low coverage, since there are numerous modules of our code that we did not implement tests for, as is the case for the any api functionality, monitoring or evaluation to name a few.
+
+If we had hypothetically gotten a code coverage of close to 100%, we would still not naively trust our code to be error free, since coverage does not completely ensure that the code has no errors. There may still be code that hasn't been run or tested with our tests, albeit corner cases. On the other hand, a high coverage still tells us that large parts of the code have been tested.
+
 
 ### Question 9
 
@@ -239,7 +256,9 @@ We implemented
 >
 > Answer:
 
---- question 9 fill here ---
+We did use branches in our workflow, where each feature to be added was developed and experimented with on a separate branch dedicated to the feature. We made use of frequent commits to ensure transparency and clarity in our work. Once work was done on the feature, we first tested the feature locally, if applicable, on the feature branch, then we merged the main branch into the feature branch and resolved any merge conflicts. Finally we would merge the feature branch into the main branch.
+
+We did not make much use of pull requests, but they are indeed helpful because they ensure that code that are to merged into main must be tested and reviewed before eventual merges. If the project had been even bigger and featured more people, pull requests would have been good integrate further into the workflow.
 
 ### Question 10
 
@@ -254,7 +273,7 @@ We implemented
 >
 > Answer:
 
---- question 10 fill here ---
+We used DVC for managing the data, and integrated it with remote storage in a Google Cloud Storage Bucket. This was beneficial in the way it allowed us to store the data in the cloud and control different versions of the data at the same time. However, there wasn't much need for version controlling the data in our project, since data, in our case, was fairly static. In an environment where data is subject to change often, or many people are managing the data at the same time, version control would be crucial to include.
 
 ### Question 11
 
@@ -271,7 +290,11 @@ We implemented
 >
 > Answer:
 
---- question 11 fill here ---
+Our project features continuous integration with a unit tests workflow, which is set up with GitHub Actions. The workflow only runs upon pushes and pull requests to main. It tests on both ubuntu, windows and mac operating systems. We use caching with pip and only one Python version (3.11). Additionally our workflow was authenticated with Google Cloud to get data with dvc. We could further
+Here is a link to a workflow with our unit tests.
+<https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/.github/workflows/tests.yaml>
+Here is a link to an example of workflow when triggered:
+<https://github.com/dtumlops-group98-org/Group98_MLOps/actions/runs/12930875830>
 
 ## Running code and tracking experiments
 
@@ -290,7 +313,7 @@ We implemented
 >
 > Answer:
 
---- question 12 fill here ---
+We use configurations with Hydra extensively in our project. This also includes experimentation with sub-configs such as sub-configs for different experiments as to ensure reproducibility.
 
 ### Question 13
 
@@ -322,7 +345,12 @@ We implemented
 >
 > Answer:
 
---- question 14 fill here ---
+We used W&B for experiment tracking, and as seen from the three figures, we track training loss (figure 1), training accuracy (figure 2) and training predictions (figure 3). We are tracking training loss to make sure that our model acutally learns patterns from the data during training. When the training loss decreases as it does in this case, we can ascertain that our model improves when trained. We correspondingly track training accuracy to get a measure of how well our model performs.
+We also log training predictions with W&B to possibly capture which classes are more difficult to predict. The type of plot we use could certainly be further developed to be more informative or quantize it differently for more efficient analysis of model weaknesses, but that is the idea of it.
+We did not set up W&B for hyperparameter sweeps, but as we can see from the training performance, the model ends up being quite good. Hence we simply did not prioritize combining Hydra, W&B and VertexAI with the given time frame to enable sweeping.
+![Fig. 1: Training loss from W&B](figures/wandb_trainloss_batch_size-64_epochs-40_lr-1e-4_num_samples-4000_seed-42.png)
+![Fig. 2: Training loss from W&B](figures/wandb_trainacc_batch_size-64_epochs-40_lr-1e-4_num_samples-4000_seed-42.png)
+![Fig. 3: Training loss from W&B](figures/wandb_trainpred_batch_size-64_epochs-40_lr-1e-4_num_samples-4000_seed-42.png)
 
 ### Question 15
 
@@ -337,7 +365,18 @@ We implemented
 >
 > Answer:
 
---- question 15 fill here ---
+We used docker for two causes: training and deployment. Although training was also done locally, for larger training runs, we felt the need of exporting resource allocation instead of needing to run the model overnight and leaving one of our PCs idling away. For Cloud Deployment, we developed two images: one for our backend API and one for our frontend API, which was especially important, as this enabled us to create a service that outside users may engage with. For all docker usages, we configured shell scripts that would allow us to build and deploy containers seemlessly. To run the backend docker image, we'd run:
+
+```bash
+gcloud run deploy backend \
+    --image=$LOCATION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$IMAGE_NAME:$IMAGE_TAG \
+    --region=$LOCATION \
+    --platform=managed \
+    --timeout=300s \
+    --memory=2.0G
+```
+
+where all variables prefixed by '$' are pre-defined environment variables, which can be found here: [shell script](https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/shell_scripts/cloud_deploy_backend.sh). An example of a dockerfile we've created can be found here: [dockerfile](https://github.com/dtumlops-group98-org/Group98_MLOps/blob/main/dockerfiles/backend.dockerfile).
 
 ### Question 16
 
@@ -352,7 +391,7 @@ We implemented
 >
 > Answer:
 
---- question 16 fill here ---
+We used different measures to counteract bugs throughout our project. We tried to use the debugger when we saw fit, which was used e.g. when developing our data and training scripts, which definitely sped-up the debugging process. We found later on down the pipeline, that it was easier to just resort to simple logging debugging, e.g. when testing our API locally. For such cases, we mainly used *loguru*, which was especially neat given its formatting capabilities, as well as streamlit writes when testing our frontend. We didn't do any profiling, as we didn't see the need in it, as our code behaved as we had expected and only the training loop offered as a bottleneck for our code. We could have ran a profiler to see if we could make some steps more efficient, e.g. by testing performance differences between single-threaded and distributed training, however, we chose to spend our time doing other tasks, down-prioritizing the model.
 
 ## Working in the cloud
 
@@ -369,7 +408,19 @@ We implemented
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following six Cloud services: Build Trigger, Artifact Registry, Vertex AI, Bucket, Secret Management and Run.
+
+Cloud Build Trigger: Automates the build process by triggering builds whenever changes are pushed to our GitHub repository.
+
+Artifact Registry: Stores and manages container images and other artifacts.
+
+Vertex AI: Provides a platform for training, deploying, and managing our model.
+
+Bucket: A scalable and secure storage solution used to store and manage user statistics and data.
+
+Cloud Secret Manager: A service used to securely store and manage sensitive information like API keys, credentials, and other secrets.
+
+Cloud Run: A serverless platform that hosts and scales our FastAPI backend, handling prediction requests from the Streamlit frontend.
 
 ### Question 18
 
@@ -393,7 +444,7 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 19 fill here ---
+![my_image](figures/GCP_Bucket.png)
 
 ### Question 20
 
@@ -402,7 +453,7 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 20 fill here ---
+![my_image](figures/Artifact_Registry.png)
 
 ### Question 21
 
@@ -411,7 +462,7 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 21 fill here ---
+![my_image](figures/Cloud_build_history.png)
 
 ### Question 22
 
@@ -426,7 +477,8 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 22 fill here ---
+We used Vertex AI for training our model, which we prefered over Engine because Vertex AI combines the steps of creating a VM, running a docker image and using experiment configurations into a single flow, whereas these steps are manual with Engine.
+To allow for the use of Vertex AI, we wrote a configuration file `gcloud_vertex/config_cpu.yaml` for the custom job of Vertex AI we wanted to run, whilst specifying also the cloud-deployed image associated with the job. We additionally included environment variables in our config file to connect with W&B. We ran on europe-west1 and used machine type `n1-highmem-8`. We attempted to use Vertex AI with a gpu config file as well, but we were never allowed to run it. See question 18 for more about training in the cloud.
 
 ## Deployment
 
@@ -474,7 +526,11 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 25 fill here ---
+We did perform unit tests and load tests of our API. We spent quite a bit of time getting unit tests to work with GitHub actions for testing our training process, especially in terms of getting the workflow to work with dvc and google cloud. Hence we did not proceed with implementations of unit tests and load tests for our API.
+
+If we were to set up unit tests for our API, we would test the expected output for a given input to assess whether the API works as intended. For example our predict end-point expects a .json input and should return a dictionary. We could assert that an arbitrary .json input correctly returns a dictionary of predicted targets and associated probabilities. We could also implement unit tests for our monitoring functionality, that should ensure that new requests are correctly written to the .csv file
+
+In terms of load testing, we could use the `locust` framework to test how heavy a load, our API could handle. This would involve simulating a number of users in a small time window, and monitoring if and when our API crashes.
 
 ### Question 26
 
@@ -489,7 +545,9 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 26 fill here ---
+We did manage to implement monitoring for our model! We utilized both the *evidently*- and the *prometheus* framework for this. Our application monitors *data drift*, *target drift* and *data quality* for ML specific monitoring, as well as classic DevOps monitoring on *application error counts* and *request call diagnostics*. The ML specific monitoring is done by loading our reference data as well as the new data from a GCS bucket, from which we utilize the *evidently* framework to create a report that encompasses the three specified monitoring areas. DevOps monitoring is mounted onto our backend API, which then listens to user input. For each request, it observes the time it takes to finish the whole request, as well as sub-events such as the exclusive time it takes to run a prediction whilst excluding model-fetching.
+
+Currently, our diagnostics don't tell us anything, given the low lifetime throughput of our application, however, given time, we would expect to be able to gain great insights from these features.
 
 ## Overall discussion of project
 
@@ -508,7 +566,11 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
---- question 27 fill here ---
+We spent a total of $6 to train the model on Vetex AI, Inference on Cloud Run and storage on GCP.
+
+Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google Cloud Platform to identify which service was the most expensive. We suspect this might be due to running on credits.
+
+As a group, we agreed that while Google Cloud offers powerful tools, its interface is not very user-friendly, and navigating the platform can be slow and frustrating. The terminal commands were easier to work with, but we encountered issues gaining access to GPUs, which was particularly inconvenient. Despite these challenges, there was a consensus that running the model was relatively inexpensive overall.
 
 ### Question 28
 
@@ -524,7 +586,7 @@ We didn't directly use the compute engine other than for training a simple versi
 >
 > Answer:
 
-We implemented a frontend using streamlit which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using evidently, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using promotheus. 
+We implemented a frontend using `streamlit` which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using `evidently`, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using `promotheus`.
 
 ### Question 29
 
@@ -540,13 +602,14 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 > *Whenever we commit code and push to GitHub, it auto triggers ... and ... . From there the diagram shows ...*
 >
 > Answer:
-> The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
-> 
-> Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
->
->  For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
+
+The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
+
+Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
+
+For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
 ![my_image](figures/MLops_Project_Diagram.png)
---- question 29 fill here ---
+
 
 ### Question 30
 
@@ -560,7 +623,15 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 >
 > Answer:
 
---- question 30 fill here ---
+We had challenges with integrating Cloud Storage (Bucket) with DVC and ensuring smooth synchronization between local data storage and the GCP bucket. The reason for these issues was primarily the complexity of configuring DVC to work seamlessly with remote storage and handling permissions for accessing the GCP bucket.
+
+One common problem we had was setting up the proper authentication and access permissions for DVC to push and pull data from the bucket. Misconfigured IAM roles or service account keys often led to access-denied errors, which required multiple iterations of debugging and tweaking the roles and policies.
+Google Cloud, Docker deployment API, Hydra, Weight and Biases
+
+In terms of Docker API deployment, we faced issues with traffic management, open ports, and unhelpful output logs, which provided little debugging insight. The lack of support from exercise files or online resources made troubleshooting more difficult. Additionally, debugging was time-consuming due to the long boot times of the Docker image, slowing down iterations and testing.
+
+We also struggled with Google Cloud, as it is not very user-friendly. Identifying which service account was building was confusing, and we were never granted access to use GPUs on Vertex AI. Additionally, when Cloud Run failed, no logs were provided, making debugging extremely difficult and frustrating. These issues added significant challenges to the workflow.
+
 
 ### Question 31
 
@@ -578,15 +649,12 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-fewafewubaofewnafioewnifowf ewafw afew afewafewafionewoanf waf ewonfieownaf fewnaiof newio fweanøf wea fewa
- fweafewa fewiagonwa ognwra'g
- wa
- gwreapig ipweroang w rag
- wa grwa
-  g
-  ew
-  gwea g
-  ew ag ioreabnguorwa bg̈́aw
-   wa
-   gew4igioera giroeahgi0wra gwa
+Overall, we all contributed to most parts of the process by supporting each other with debugging and integrating the workflow. However, our main contributions to specific areas can be summarized as follows:
 
+s194119: Cloud Artifact, Vertex AI, GCP Bucket, FrontEnd, Train Model.
+
+s194613: Backend, FastAPI, CloudRun, DVC, Build Model for fine tuning.
+
+s204216: Unittesting, Github Actions, Evidently AI (Monitoring), Process Data.
+
+s204227: Github Setup, Huggingface, WandB, Structure Diagram
