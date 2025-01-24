@@ -3,12 +3,8 @@ outs:
   path: data
   files:
   - relpath: monitoring/newdata_predictions_db.csv
-    md5: 22e31dc119a490ea258c19587a863103
-    size: 137
-    cloud:
-      remote_storage:
-        etag: 08b3e6dba6fe8d8b031001
-        version_id: '1737708952548147'
+    md5: 5573ff640eea9ee04b450fcd245538f2
+    size: 129
   - relpath: processed/banking77/label_strings.json
     md5: 7d9658f2e1615bf12f08cbce6e3feb78
     size: 2331
