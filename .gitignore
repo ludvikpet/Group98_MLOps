@@ -1,4 +1,4 @@
-#force include 
+#force include
 !dockerfiles/*
 !cloudbuild.yaml
 !gcloud_vertex/
@@ -15,7 +15,7 @@ data/
 # test cache
 manual_test/
 
-.env 
+.env
 data/*
 models/
 
@@ -195,3 +195,8 @@ cython_debug/
 
 /data
 /models
+prediction_database.csv
+report.html
+
+# Data dvc
+.dvc/tmp/*
