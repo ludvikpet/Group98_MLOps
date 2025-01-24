@@ -524,7 +524,7 @@ We implemented
 >
 > Answer:
 
---- question 28 fill here ---
+We implemented a frontend using streamlit which is linked in the github repo readme. It allows for inference with three model types, and shows the top 10 predicted probabilities. In addition, the frontend allows to generate data drifting reports using evidently, obtain inference statistics (inference time distribution, input string length distributions) by writing each prediction request to a csv file in gcs. We have also added rudimentary system monitoring using promotheus. 
 
 ### Question 29
 
