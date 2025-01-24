@@ -46,68 +46,68 @@ will check the repositories and the code to verify your answers.
 
 ### Week 1
 
-* [x] Create a git repository (M5)
-* [x] Make sure that all team members have write access to the GitHub repository (M5)
-* [x] Create a dedicated environment for you project to keep track of your packages (M2)
-* [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
-* [x] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
-* [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
-* [ ] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
+* :white_check_mark: Create a git repository (M5)
+* :white_check_mark: Make sure that all team members have write access to the GitHub repository (M5)
+* :white_check_mark: Create a dedicated environment for you project to keep track of your packages (M2)
+* :white_check_mark: Create the initial file structure using cookiecutter with an appropriate template (M6)
+* :white_check_mark: Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
+* :white_check_mark: Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
+* :white_check_mark: Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
-* [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
-* [x] Do a bit of code typing and remember to document essential parts of your code (M7)
-* [x] Setup version control for your data or part of your data (M8)
-* [x] Add command line interfaces and project commands to your code where it makes sense (M9)
-* [x] Construct one or multiple docker files for your code (M10)
-* [x] Build the docker files locally and make sure they work as intended (M10)
-* [x] Write one or multiple configurations files for your experiments (M11)
-* [x] Used Hydra to load the configurations and manage your hyperparameters (M11)
-* [ ] Use profiling to optimize your code (M12)
-* [x] Use logging to log important events in your code (M14)
-* [x] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-* [ ] Consider running a hyperparameter optimization sweep (M14)
-* [ ] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
+* :x: _Remember to comply with good coding practices (`pep8`) while doing the project (M7)_
+* :x: _Do a bit of code typing and remember to document essential parts of your code (M7)_
+* :white_check_mark: Setup version control for your data or part of your data (M8)
+* :white_check_mark: Add command line interfaces and project commands to your code where it makes sense (M9)
+* :white_check_mark: Construct one or multiple docker files for your code (M10)
+* :white_check_mark: Build the docker files locally and make sure they work as intended (M10)
+* :white_check_mark: Write one or multiple configurations files for your experiments (M11)
+* :white_check_mark: Used Hydra to load the configurations and manage your hyperparameters (M11)
+* :x: _Use profiling to optimize your code (M12)_
+* :white_check_mark: Use logging to log important events in your code (M14)
+* :white_check_mark: Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
+* :x: Consider running a hyperparameter optimization sweep (M14)
+* :x: _Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)_
 
 ### Week 2
 
-* [x] Write unit tests related to the data part of your code (M16)
-* [x] Write unit tests related to model construction and or model training (M16)
-* [x] Calculate the code coverage (M16)
-* [x] Get some continuous integration running on the GitHub repository (M17)
-* [x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
-* [ ] Add a linting step to your continuous integration (M17)
-* [ ] Add pre-commit hooks to your version control setup (M18)
-* [ ] Add a continues workflow that triggers when data changes (M19)
-* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19)
-* [x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
-* [x] Create a trigger workflow for automatically building your docker images (M21)
-* [x] Get your model training in GCP using either the Engine or Vertex AI (M21)
-* [x] Create a FastAPI application that can do inference using your model (M22)
-* [x] Deploy your model in GCP using either Functions or Run as the backend (M23)
-* [ ] Write API tests for your application and setup continues integration for these (M24)
-* [ ] Load test your application (M24)
-* [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
-* [x] Create a frontend for your API (M26)
+* :white_check_mark: Write unit tests related to the data part of your code (M16)
+* :white_check_mark: Write unit tests related to model construction and or model training (M16)
+* :x: _Calculate the code coverage (M16)_
+* :white_check_mark: Get some continuous integration running on the GitHub repository (M17)
+* :white_check_mark: Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
+* :x: _Add a linting step to your continuous integration (M17)_
+* :x: _Add pre-commit hooks to your version control setup (M18)_
+* :x: _Add a continuous workflow that triggers when data changes (M19)_
+* :x: _Add a continuous workflow that triggers when changes to the model registry is made (M19)_
+* :white_check_mark: Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
+* :white_check_mark: Create a trigger workflow for automatically building your docker images (M21)
+* :white_check_mark: Get your model training in GCP using either the Engine or Vertex AI (M21)
+* :white_check_mark: Create a FastAPI application that can do inference using your model (M22)
+* :white_check_mark: Deploy your model in GCP using either Functions or Run as the backend (M23)
+* :x: _Write API tests for your application and setup continuous integration for these (M24)_
+* :x: _Load test your application (M24)_
+* :x: _Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)_
+* :white_check_mark: Create a frontend for your API (M26)
 
 ### Week 3
 
-* [x] Check how robust your model is towards data drifting (M27)
-* [x] Deploy to the cloud a drift detection API (M27)
-* [x] Instrument your API with a couple of system metrics (M28)
-* [ ] Setup cloud monitoring of your instrumented application (M28)
-* [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
-* [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
-* [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
-* [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
+* :white_check_mark: Check how robust your model is towards data drifting (M27)
+* :white_check_mark: Deploy to the cloud a drift detection API (M27)
+* :white_check_mark: Instrument your API with a couple of system metrics (M28)
+* :white_check_mark: Setup cloud monitoring of your instrumented application (M28)
+* :x: _Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)_
+* :x: _If applicable, optimize the performance of your data loading using distributed data loading (M29)_
+* :x: _If applicable, optimize the performance of your training pipeline by using distributed training (M30)_
+* :x: _Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)_
 
 ### Extra
 
-* [ ] Write some documentation for your application (M32)
-* [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
-* [x] Create an architectural diagram over your MLOps pipeline
-* [x] Make sure all group members have an understanding about all parts of the project
-* [x] Uploaded all your code to GitHub
+* :x: _Write some documentation for your application (M32)_
+* :x: _Publish the documentation to GitHub Pages (M32)_
+* :white_check_mark: Revisit your initial project description. Did the project turn out as you wanted?
+* :x: _Create an architectural diagram over your MLOps pipeline_
+* :white_check_mark: Make sure all group members have an understanding about all parts of the project
+* :white_check_mark: Uploaded all your code to GitHub
 
 ## Group information
 
@@ -380,7 +380,19 @@ We used different measures to counteract bugs throughout our project. We tried t
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following six Cloud services: Build Trigger, Artifact Registry, Vertex AI, Bucket, Secret Management and Run.
+
+Cloud Build Trigger: Automates the build process by triggering builds whenever changes are pushed to our GitHub repository.
+
+Artifact Registry: Stores and manages container images and other artifacts.
+
+Vertex AI: Provides a platform for training, deploying, and managing our model. 
+
+Bucket: A scalable and secure storage solution used to store and manage user statistics and data.
+
+Cloud Secret Manager: A service used to securely store and manage sensitive information like API keys, credentials, and other secrets.
+
+Cloud Run: A serverless platform that hosts and scales our FastAPI backend, handling prediction requests from the Streamlit frontend.
 
 ### Question 18
 
@@ -403,7 +415,7 @@ We used different measures to counteract bugs throughout our project. We tried t
 > **You can take inspiration from [this figure](figures/bucket.png).**
 >
 > Answer:
-
+![my_image](figures/GCP_Bucket.png)
 --- question 19 fill here ---
 
 ### Question 20
@@ -412,6 +424,7 @@ We used different measures to counteract bugs throughout our project. We tried t
 > **stored. You can take inspiration from [this figure](figures/registry.png).**
 >
 > Answer:
+![my_image](figures/Artifact_Registry.png)
 
 --- question 20 fill here ---
 
@@ -421,6 +434,7 @@ We used different measures to counteract bugs throughout our project. We tried t
 > **your project. You can take inspiration from [this figure](figures/build.png).**
 >
 > Answer:
+![my_image](figures/Cloud_build_history.png)
 
 --- question 21 fill here ---
 
@@ -520,8 +534,11 @@ Currently, our diagnostics don't tell us anything, given the low lifetime throug
 > *costing the most was ... due to ... . Working in the cloud was ...*
 >
 > Answer:
+We spent a total of $6 to train the model on Vetex AI, Inference on Cloud Run and storage on GCP.
 
---- question 27 fill here ---
+Unfortunately, we couldn’t retrieve detailed cost breakdowns from the Google Cloud Platform to identify which service was the most expensive. We suspect this might be due to running on credits.
+
+As a group, we agreed that while Google Cloud offers powerful tools, its interface is not very user-friendly, and navigating the platform can be slow and frustrating. The terminal commands were easier to work with, but we encountered issues gaining access to GPUs, which was particularly inconvenient. Despite these challenges, there was a consensus that running the model was relatively inexpensive overall.
 
 ### Question 28
 
@@ -553,13 +570,13 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 > *Whenever we commit code and push to GitHub, it auto triggers ... and ... . From there the diagram shows ...*
 >
 > Answer:
-> The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
-> 
-> Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
->
->  For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
+
+The starting point of our setup is a local environment structured using a cookiecutter template to ensure an organized and standardized project layout. We use Docker to encapsulate dependencies and maintain consistency across different environments. Within the Docker container, Hydra is employed to manage configuration files effectively. While Conda is used for environment management, the data and pretrained TinyBERT model are retrieved from Hugging Face, specifically using the Banking77 dataset. Finally, we leverage the PyTorch library to fine-tune the TinyBERT model for our specific classification problem, tailoring it to the given data and task.
+ 
+Outside our Docker container, we have local data storage, which is connected to our GCP bucket through Data Version Control (DVC). This setup allows us to manage and version control our data efficiently, ensuring seamless synchronization between local storage and the cloud for reproducibility and collaboration. Our code is version controlled using Git with collaboration through GitHub. To ensure code quality and maintain robust workflows, we have implemented continuous integration using GitHub Actions. This includes running unittests with Pytest to ensure code correctness and catch potential issues early in the development process. After running unittests with GitHub Actions, we use Google Cloud Build Triggers to automate the build process. This process takes our code, builds the application, and pushes the resulting artifacts to the Google Artifact Registry for storage and deployment. The artifacts are retrieved and used for training models on Vertex AI. While running on Vertex AI, the experiment logs are sent to Weights & Biases (WandB) for real-time tracking, visualization and analysis of model training and performance metrics. The model and its parameters are stored in the GCP bucket, where we use Evidently AI to monitor data drift.
+
+For user requests, we have implemented a frontend API using Streamlit, which interacts with a FastAPI backend. The backend handles prediction requests and is deployed on Google Cloud Run for scalability and reliability. User statistics are stored in a GCP bucket and monitored using Evidently AI, allowing us to track and analyze user behavior and ensure model performance remains consistent over time.
 ![my_image](figures/MLops_Project_Diagram.png)
---- question 29 fill here ---
 
 ### Question 30
 
@@ -573,7 +590,14 @@ We implemented a frontend using streamlit which is linked in the github repo rea
 >
 > Answer:
 
---- question 30 fill here ---
+We had challenges with integrating Cloud Storage (Bucket) with DVC and ensuring smooth synchronization between local data storage and the GCP bucket. The reason for these issues was primarily the complexity of configuring DVC to work seamlessly with remote storage and handling permissions for accessing the GCP bucket.
+
+One common problem we had was setting up the proper authentication and access permissions for DVC to push and pull data from the bucket. Misconfigured IAM roles or service account keys often led to access-denied errors, which required multiple iterations of debugging and tweaking the roles and policies.
+Google Cloud, Docker deployment API, Hydra, Weight and Biases
+
+In terms of Docker API deployment, we faced issues with traffic management, open ports, and unhelpful output logs, which provided little debugging insight. The lack of support from exercise files or online resources made troubleshooting more difficult. Additionally, debugging was time-consuming due to the long boot times of the Docker image, slowing down iterations and testing.
+
+We also struggled with Google Cloud, as it is not very user-friendly. Identifying which service account was building was confusing, and we were never granted access to use GPUs on Vertex AI. Additionally, when Cloud Run failed, no logs were provided, making debugging extremely difficult and frustrating. These issues added significant challenges to the workflow.
 
 ### Question 31
 
